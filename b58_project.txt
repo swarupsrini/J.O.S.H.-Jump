@@ -33,11 +33,11 @@ UofT E-mail Address: hemant.bhanot@mail.utoronto.ca
 Project Plan
 --------
 
-Project Title: Super J.O.S.H. Bros
+Project Title: J.O.S.H. Jump
 
 
 Provide a one paragraph description of your project:
-Inspired by Super Mario Bros, the Super J.O.S.H. Bros is a platformer game project where the player interacts with a pixelated environment by controlling the movement of a character (moving side to side and jumping) where the aim of the game is to gather the maximum points by destroying monsters and collecting coins.
+Inspired by Gravity Guy, J.O.S.H. Jump is a platformer game project where the player interacts with a pixelated environment by flipping the direction of the gravity of the environment (downward/upward) where the aim of the game is to help the constantly moving character avoid obstacles and complete the level.
 
 What is your plan for the first week?
 - Create character physics
@@ -47,16 +47,15 @@ What is your plan for the first week?
 
 What is your plan for the second week?
 - Main menu state system
-- Advanced character physics
-- Monster movement and monster behavior
-- Coin/points collection system
+- Advanced character physics including obstacles, boosters
+- System to record distance travelled, points gathered
 - Simple map making system
 
 What is your plan for the third week?
 - Life system
 - 8 bit sound system
-- Refining monster-character interaction and physics
-- Create maps and connection between maps via pipe system
+- Refining obstacle-character interaction and physics
+- Create maps and connection between maps via teleporter system
 - Animations (level completion, death)
 
 What is your backup plan if things don't work out as planned
