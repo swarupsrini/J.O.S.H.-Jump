@@ -99,9 +99,12 @@ module part2(
 module control(
     input clk,
     input resetn,
+    // user input
     input go,
+    // signals from datapath
     input endgame,
     
+    // signals to datapath
     output reg 
     );
 
