@@ -66,6 +66,13 @@ Weekly Reports
 --------------
 <In this space, provide a report each week of what worked and what didn't, and what (if any) changes were made to your proposal)>
 
+Week 1:
+    Worked out base mechanics of game
+    Drew out data path of and interactions between modules
+    We had trouble setting up the register system we wanted to use for the map, on Verilog, so we had to look up documentation
+    Had trouble figuring out mechanics and subsequent implementation in Verilog of our first game choice, a Mario-based platformer, and we switched to a Gravity Guy-based platformer
+    Worked out basic artwork for game sprites
+
 
 [This is an example of a report where things didn't go so well.]
 Week 1:
