@@ -190,12 +190,9 @@ module update_screen(vwall, hwall, vdude, hdude, clk, o)
             if (h_counter < 7'b1111000)
                 begin 
                     h_counter <= h_counter + 1;
-                    
+
                 end
         end 
-
-    
-
 
 
 
