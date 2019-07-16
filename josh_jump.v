@@ -167,65 +167,9 @@ module datapath(
     reg [99:0] hdude; // group of 4 1s 
     reg [119:0] vdude; // 4 pixels wide
     
-    // input logic for input registers
-    always @(clk)
-    begin
-        
-    end
- 
-    // Output result register
-    always@(posedge clk) begin
-        if(!resetn) begin
-            data_result <= 8'b0; 
-        end
-        else 
-            if(ld_r)
-                data_result <= alu_out;
-    end
 
-    // The ALU input multiplexers
-    always @(*)
-    begin
-        case (alu_select_a)
-            2'd0:
-                alu_a = a;
-            2'd1:
-                alu_a = b;
-            2'd2:
-                alu_a = c;
-            2'd3:
-                alu_a = x;
-            default: alu_a = 8'b0;
-        endcase
-
-        case (alu_select_b)
-            2'd0:
-                alu_b = a;
-            2'd1:
-                alu_b = b;
-            2'd2:
-                alu_b = c;
-            2'd3:
-                alu_b = x;
-            default: alu_b = 8'b0;
-        endcase
-    end
-
-    // The ALU 
-    always @(*)
-    begin : ALU
-        // alu
-        case (alu_op)
-            0: begin
-                   alu_out = alu_a + alu_b; //performs addition
-               end
-            1: begin
-                   alu_out = alu_a * alu_b; //performs multiplication
-               end
-            default: alu_out = 8'b0;
-        endcase
-    end
     
+
 endmodule
 
 module update_screen(vwall, hwall, vdude, hdude, o)
