@@ -182,16 +182,28 @@ module datapath(
 
 endmodule
 
-module update_screen(vwall, hwall, vdude, hdude, o)
-    input [99:0] vwall [120:0]; // maybe too much? 
+module update_screen(vwall, hwall, vdude, hdude, clk, o)
+    input [99:0] vwall [119:0]; // maybe too much? 
     input [119:0] hwall;
     input [99:0] hdude; // group of 4 1s 
     input [119:0] vdude; // 4 pixels wide
+    input clk;
 
     reg [6:0] h_counter, v_counter;
 
     h_counter = 7'b0010100;
-    v_counter = 
+    v_counter = 7'b0001010;
+
+    // get x value
+    always @(posedge clk)
+        begin 
+            if (h_counter < 7'b1111000)
+                begin 
+                    h_counter <= h_counter + 1;
+
+                end
+        end 
+
 
 
 endmodule
