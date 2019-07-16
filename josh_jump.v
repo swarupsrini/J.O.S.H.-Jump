@@ -164,8 +164,8 @@ module datapath(
     // input registers
     reg [100:0] vwall [120:0]; // maybe too much? 
     reg [120:0] hwall;
-    reg [100:0] hdude;
-    reg [120:0] vdude;
+    reg [100:0] hdude; // group of 4 1s 
+    reg [120:0] vdude; // 4 pixels wide
     
     // input logic for input registers
     always @(clk)
