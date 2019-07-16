@@ -119,7 +119,7 @@ module control(
     begin: state_table 
             case (current_state)
                 S_MENU: next_state = go ? S_MENU_WAIT : S_MENU;
-                S_MENU_WAIT: next_state = S_GAME;
+                S_MENU_WAIT: next_state = S_GAME_START;
                 S_GAME: next_state = endgame ? S_MENU : S_GAME;
             default: next_state = S_MENU;
         endcase
@@ -162,15 +162,10 @@ module datapath(
     );
     
     // input registers
-    reg [120:0] vwall [160:0]; // maybe too much? 
-    reg [160:0] hwall;
-    reg [120:0] hdude;
-    reg [160:0] vdude;
-
-    // output of the alu
-    reg [7:0] alu_out;
-    // alu input muxes
-    reg [7:0] alu_a, alu_b;
+    reg [100:0] vwall [120:0]; // maybe too much? 
+    reg [120:0] hwall;
+    reg [100:0] hdude;
+    reg [120:0] vdude;
     
     // input logic for input registers
     always @(clk)
@@ -233,14 +228,23 @@ module datapath(
     
 endmodule
 
-module sync_counter(enable, clock, clear_b, startb, endb, inc, q);
-	input enable, clock, clear_b, inc;
+module clock_divider(div, clock, clock_out, reset_n);
+    input clock;
+    output clock_out;
+    wire q;
+    wire qout;
+    sync_counter sc(1'b1, )
+
+endmodule
+
+module sync_counter(enable, clock, reset_n, startb, endb, inc, q);
+	input enable, clock, reset_n, inc;
 	input [27:0] startb, endb;
 	output reg [27:0] q;
 	
 	always @(posedge clock)
 	begin
-		if (clear_b == 1'b0)
+		if (reset_n == 1'b0)
 			q <= startb;
 		else if (enable == 1'b1)
 			if (q == endb)
