@@ -100,12 +100,12 @@ module control(
     input clk,
     input resetn,
     // user input
-    input go,
+    input grav,
     // signals from datapath
     input endgame,
     
     // signals to datapath
-    output reg 
+    output reg startgame // 0 for menu, 1 for game
     );
 
     reg [5:0] current_state, next_state; 
@@ -130,14 +130,16 @@ module control(
     always @(*)
     begin: enable_signals
         // By default make all our signals 0
-        flip_g = 1'b0;
-
+            startgame = 1'b0
         case (current_state)
-            S_MENU: begin
-
+            //S_MENU: begin
+            //    startgame = 1'b0;
+            //end
+            S_GAME: begin
+                startgame = 1'b1;
             end
             
-        // default:    // don't need default since we already made sure all of our outputs were assigned a value at the start of the always block
+        // default:  // don't need default since we already made sure all of our outputs were assigned a value at the start of the always block
         endcase
     end // enable_signals
    
@@ -145,7 +147,7 @@ module control(
     always@(posedge clk)
     begin: state_FFs
         if(!resetn)
-            current_state <= S_LOAD_A;
+            current_state <= S_MENU;
         else
             current_state <= next_state;
     end // state_FFS
@@ -154,42 +156,26 @@ endmodule
 module datapath(
     input clk,
     input resetn,
-    input [7:0] data_in,
-    input ld_alu_out, 
-    input ld_x, ld_a, ld_b, ld_c,
-    input ld_r,
-    input alu_op, 
-    input [1:0] alu_select_a, alu_select_b,
-    output reg [7:0] data_result
+    input startgame,
+    input grav,
+    output reg endgame
     );
     
     // input registers
-    reg [7:0] a, b, c, x;
+    reg [120:0] vwall [160:0]; // maybe too much? 
+    reg [160:0] hwall;
+    reg [120:0] hdude;
+    reg [160:0] vdude;
 
     // output of the alu
     reg [7:0] alu_out;
     // alu input muxes
     reg [7:0] alu_a, alu_b;
     
-    // Registers a, b, c, x with respective input logic
-    always@(posedge clk) begin
-        if(!resetn) begin
-            a <= 8'b0; 
-            b <= 8'b0; 
-            c <= 8'b0; 
-            x <= 8'b0; 
-        end
-        else begin
-            if(ld_a)
-                a <= ld_alu_out ? alu_out : data_in; // load alu_out if load_alu_out signal is high, otherwise load from data_in
-            if(ld_b)
-                b <= ld_alu_out ? alu_out : data_in; // load alu_out if load_alu_out signal is high, otherwise load from data_in
-            if(ld_x)
-                x <= data_in;
-
-            if(ld_c)
-                c <= data_in;
-        end
+    // input logic for input registers
+    always @(clk)
+    begin
+        
     end
  
     // Output result register
@@ -245,6 +231,23 @@ module datapath(
         endcase
     end
     
+endmodule
+
+module sync_counter(enable, clock, clear_b, startb, endb, inc, q);
+	input enable, clock, clear_b, inc;
+	input [27:0] startb, endb;
+	output reg [27:0] q;
+	
+	always @(posedge clock)
+	begin
+		if (clear_b == 1'b0)
+			q <= startb;
+		else if (enable == 1'b1)
+			if (q == endb)
+				q <= startb;
+			else
+				q <= q + inc;
+	end
 endmodule
 
 module hex_decoder(hex_digit, segments);
