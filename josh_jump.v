@@ -161,30 +161,32 @@ module datapath(
     output reg endgame
     );
     
-    // input registers
-    reg [99:0] vwall [119:0]; // maybe too much? 
+    // registers
+    reg [99:0] vwall [119:0]; 
     reg [119:0] hwall;
-    reg [99:0] hdude; // group of 4 1s 
+    reg [6:0] hdude = 7'd20; // where the dude starts horizontally (from 0 to 0101000 i.e. 20, negative value means dude off map)
     reg [119:0] vdude; // 4 pixels wide
     
-    // temp registers
-    reg []
+    reg [4:0] surr;
 
     always @(posedge clk)
     begin
         // 0. resetting
         if (!reset_n)
         begin
-
+            endgame = 1'b1;
         end
+        else
+        begin
+            // 1. collision check
+            // a. vertical
+            if (!grav)  // grav down
+                surr = {vwall[]
+            else        // grav up
+                surr = 
+        end
+
     end
-
-    // 0. resetting
-    
-
-    // 1. collision check
-    // a. vertical
-    if ()
 
 endmodule
 
