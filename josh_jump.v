@@ -167,8 +167,18 @@ module datapath(
     reg [99:0] hdude; // group of 4 1s 
     reg [119:0] vdude; // 4 pixels wide
     
+    // temp registers
+    reg []
 
+    // getting the clock
+    wire clkup =
+
+    // 0. resetting
     
+
+    // 1. collision check
+    // a. vertical
+    if ()
 
 endmodule
 
