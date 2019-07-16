@@ -162,10 +162,10 @@ module datapath(
     );
     
     // input registers
-    reg [100:0] vwall [120:0]; // maybe too much? 
-    reg [120:0] hwall;
-    reg [100:0] hdude; // group of 4 1s 
-    reg [120:0] vdude; // 4 pixels wide
+    reg [99:0] vwall [119:0]; // maybe too much? 
+    reg [119:0] hwall;
+    reg [99:0] hdude; // group of 4 1s 
+    reg [119:0] vdude; // 4 pixels wide
     
     // input logic for input registers
     always @(clk)
@@ -226,6 +226,20 @@ module datapath(
         endcase
     end
     
+endmodule
+
+module update_screen(vwall, hwall, vdude, hdude, o)
+    input [99:0] vwall [120:0]; // maybe too much? 
+    input [119:0] hwall;
+    input [99:0] hdude; // group of 4 1s 
+    input [119:0] vdude; // 4 pixels wide
+
+    reg [6:0] h_counter, v_counter;
+
+    h_counter = 7'b0010100;
+    v_counter = 
+
+
 endmodule
 
 module clock_divider(div, clock, clock_out, reset_n);
