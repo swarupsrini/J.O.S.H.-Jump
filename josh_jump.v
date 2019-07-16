@@ -170,8 +170,14 @@ module datapath(
     // temp registers
     reg []
 
-    // getting the clock
-    wire clkup =
+    always @(posedge clk)
+    begin
+        // 0. resetting
+        if (!reset_n)
+        begin
+
+        end
+    end
 
     // 0. resetting
     
@@ -213,7 +219,7 @@ module clock_divider(div, clock, clock_out, reset_n);
     output clock_out;
     wire q;
     wire qout;
-    sync_counter sc(1'b1, )
+    sync_counter sc(1'b1, clock, reset_n, 1'b0, )
 
 endmodule
 
