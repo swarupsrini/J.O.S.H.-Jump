@@ -170,6 +170,8 @@ module datapath(
     
     reg [4:0] surr;
     wire inc = 1'b1;
+    wire xdude = 4'd4; // if we change this we need to change the collision check to be a for loop
+    wire ydude = 4'd6;
 
     always @(posedge clk) begin
         // 0. resetting
@@ -182,11 +184,11 @@ module datapath(
             if (!grav)  // grav down
                 surr = {vwall[hdude][vdude-1'b1], vwall[hdude+1'b1][vdude-1'b1], vwall[hdude+2'd2][vdude-1'b1], vwall[hdude+2'd3][vdude-1'b1]};
             else        // grav up
-                surr = {vwall[hdude][vdude+1'b1], vwall[hdude+1'b1][vdude+1'b1], vwall[hdude+2'd2][vdude-1'b1], vwall[hdude+2'd3][vdude-1'b1]};
+                surr = {vwall[hdude][vdude+ydude+1'b1], vwall[hdude+1'b1][vdude+ydude+1'b1], vwall[hdude+2'd2][vdude+ydude+1'b1], vwall[hdude+2'd3][vdude+ydude+1'b1]};
             
             // b. horizontal
             if (hwall[1'b1]) begin
-                
+                if (~|{vwall[hdude+xdude+1'b1][vdude], vwall[hdude+xdude+1'b1][vdude+1'b1], vwall[hdude+xdude+1'b1][vdude+]})
             end
 
         end
