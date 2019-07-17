@@ -193,8 +193,7 @@ module datapath(
                     //if (hdude <= 1'b0)
                 end
             end
-
-        end
+            end
 
     end
 
@@ -220,13 +219,14 @@ module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o);
     wire [2:0] colour;
 
     integer i,j;
+
     // wall update
     initial begin 
         for (i=0; i < 120; i = i + 1)
             begin
                 if (hwall[i] == 1'b1)
                 begin
-                    for (j=0); j < 100; j = j + 1)
+                    for (j=0; j < 100; j = j + 1)
                         assign colour = (vwall[i][j] == 1'b1 ? 3'b111 : 3'b000);
                         begin
                             vga_adapter VGA(
@@ -460,14 +460,14 @@ module vga_adapter(
 
 endmodule
 
-// module clock_divider(div, clock, clock_out, reset_n);
-//     input clock;
-//     output clock_out;
-//     wire q;
-//     wire qout;
-//     sync_counter sc(1'b1, )
+module clock_divider(div, clock, clock_out, reset_n);
+    input clock;
+    output clock_out;
+    wire q;
+    wire qout;
+    sync_counter sc(1'b1, )
 
-// endmodule
+endmodule
 
 module sync_counter(enable, clock, reset_n, startb, endb, inc, q);
 	input enable, clock, reset_n, inc;
