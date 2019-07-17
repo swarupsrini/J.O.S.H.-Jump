@@ -217,11 +217,6 @@ module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o);
     wire [2:0] colour;
 
     integer i,j;
-    reg [6:0] h_counter, v_counter;
-
-    h_counter_wall = 7'b0010100;
-    v_counter_wall = 7'b0001010;
-
     // wall update
     initial begin 
         for (i=0; i < 120; i = i + 1)
