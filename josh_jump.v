@@ -200,8 +200,8 @@ endmodule
 module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o)
     input [99:0] vwall [119:0]; // maybe too much? 
     input [119:0] hwall;
-    input [:0] hdude; // group of 4 1s 
-    input [119:0] vdude; // 4 pixels wide
+    input [6:0] hdude; // group of 4 1s 
+    input [7:0] vdude; // 4 pixels wide
     input clk;
 
     wire VGA_CLK,   					//	VGA Clock
@@ -222,7 +222,7 @@ module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o)
     h_counter_wall = 7'b0010100;
     v_counter_wall = 7'b0001010;
 
-    // get x value, do walls
+    // wall update
     initial begin 
         for (i=0; i < 120; i = i + 1)
             begin
@@ -235,8 +235,8 @@ module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o)
                             .resetn(reset_n),
                             .clock(clk),
                             .colour(colour),
-                            .x(i),
-                            .y(j),
+                            .x(7'd20 + i),
+                            .y(6'd10 + j),
                             .plot(1'b1),
                             /* Signals for the DAC to drive the monitor. */
                             .VGA_R(VGA_R),
@@ -252,6 +252,7 @@ module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o)
             end
     end
 
+    // dude update
     initial begin 
         for (i=0; i < 4; i = i + 1)
             begin
@@ -262,8 +263,8 @@ module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o)
                             .resetn(reset_n),
                             .clock(clk),
                             .colour(colour),
-                            .x(hi),
-                            .y(j),
+                            .x(7'd20 + hdude + i),
+                            .y(6'd10 + vdude + j),
                             .plot(1'b1),
                             /* Signals for the DAC to drive the monitor. */
                             .VGA_R(VGA_R),
