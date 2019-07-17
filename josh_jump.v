@@ -173,12 +173,10 @@ module datapath(
 
     always @(posedge clk) begin
         // 0. resetting
-        if (!reset_n)
-        begin
+        if (!reset_n) begin
             endgame = 1'b1;
         end
-        else
-        begin
+        else begin
             // 1. collision check
             // a. vertical
             if (!grav)  // grav down
@@ -187,7 +185,10 @@ module datapath(
                 surr = {vwall[hdude][vdude+1'b1], vwall[hdude+1'b1][vdude+1'b1], vwall[hdude+2'd2][vdude-1'b1], vwall[hdude+2'd3][vdude-1'b1]};
             
             // b. horizontal
-            if (hwall[1][])
+            if (hwall[1'b1]) begin
+                
+            end
+
         end
 
     end
