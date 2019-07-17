@@ -190,9 +190,12 @@ module datapath(
             if (hwall[1'b1]) begin
                 if (~|{vwall[hdude+xdude+1'b1][vdude], vwall[hdude+xdude+1'b1][vdude+1'b1], vwall[hdude+xdude+1'b1][vdude+2'd2], vwall[hdude+xdude+1'b1][vdude+2'd3], vwall[hdude+xdude+1'b1][vdude+3'd4], vwall[hdude+xdude+1'b1][vdude+3'd5]}) begin
                     hdude = hdude-1'b1;
-                    //if (hdude <= 1'b0)
+                    if (hdude <= 1'b0)
+                        endgame = 1'b1;
                 end
             end
+
+            
             end
 
     end
