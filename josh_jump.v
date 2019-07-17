@@ -220,6 +220,23 @@ module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o);
 
     integer i,j;
 
+    vga_adapter VGA(
+                    .resetn(reset_n),
+                    .clock(clk),
+                    .colour(colour),
+                    .x(7'd20 + i),
+                    .y(6'd10 + j),
+                    .plot(1'b1),
+                    /* Signals for the DAC to drive the monitor. */
+                    .VGA_R(VGA_R),
+                    .VGA_G(VGA_G),
+                    .VGA_B(VGA_B),
+                    .VGA_HS(VGA_HS),
+                    .VGA_VS(VGA_VS),
+                    .VGA_BLANK(VGA_BLANK_N),
+                    .VGA_SYNC(VGA_SYNC_N),
+                    .VGA_CLK(VGA_CLK));
+
     // wall update
     initial begin : lol
         for (i=0; i < 120; i = i + 1)
@@ -229,23 +246,6 @@ module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o);
                     for (j=0; j < 100; j = j + 1)
                         begin : wall_update
                             assign colour = (vwall[i][j] == 1'b1 ? 3'b111 : 3'b000);
-
-                            vga_adapter VGA(
-                            .resetn(reset_n),
-                            .clock(clk),
-                            .colour(colour),
-                            .x(7'd20 + i),
-                            .y(6'd10 + j),
-                            .plot(1'b1),
-                            /* Signals for the DAC to drive the monitor. */
-                            .VGA_R(VGA_R),
-                            .VGA_G(VGA_G),
-                            .VGA_B(VGA_B),
-                            .VGA_HS(VGA_HS),
-                            .VGA_VS(VGA_VS),
-                            .VGA_BLANK(VGA_BLANK_N),
-                            .VGA_SYNC(VGA_SYNC_N),
-                            .VGA_CLK(VGA_CLK));
                         end
                 end 
             end
