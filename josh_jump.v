@@ -218,65 +218,79 @@ module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o);
 
     wire [2:0] colour;
 
-    integer i,j;
+    h_counter = 7'b0010100;
+    v_counter = 
+    v_counter = 7'b0001010;
 
-    // wall update
-    initial begin : lol
-        for (i=0; i < 120; i = i + 1)
-            begin : hello
-                if (hwall[i] == 1'b1)
-                begin : klalala
-                    for (j=0; j < 100; j = j + 1)
-                        begin : wall_update
-                            assign colour = (vwall[i][j] == 1'b1 ? 3'b111 : 3'b000);
+    // get x value
+    always @(posedge clk)
+        begin 
+            if (h_counter < 7'b1111000)
+                begin 
+                    h_counter <= h_counter + 1;
+                    
+                end
+        end
 
-                            vga_adapter VGA(
-                            .resetn(reset_n),
-                            .clock(clk),
-                            .colour(colour),
-                            .x(7'd20 + i),
-                            .y(6'd10 + j),
-                            .plot(1'b1),
-                            /* Signals for the DAC to drive the monitor. */
-                            .VGA_R(VGA_R),
-                            .VGA_G(VGA_G),
-                            .VGA_B(VGA_B),
-                            .VGA_HS(VGA_HS),
-                            .VGA_VS(VGA_VS),
-                            .VGA_BLANK(VGA_BLANK_N),
-                            .VGA_SYNC(VGA_SYNC_N),
-                            .VGA_CLK(VGA_CLK));
-                        end
-                end 
-            end
-    end
+    // integer i,j;
 
-    // dude update
-    initial begin 
-        for (i=0; i < 4; i = i + 1)
-            begin
-                    for (j=0); j < 6; j = j + 1)
-                        assign colour = 3'b100;
-                        begin : dude_update
-                            vga_adapter VGA(
-                            .resetn(reset_n),
-                            .clock(clk),
-                            .colour(colour),
-                            .x(7'd20 + hdude + i),
-                            .y(6'd10 + vdude + j),
-                            .plot(1'b1),
-                            /* Signals for the DAC to drive the monitor. */
-                            .VGA_R(VGA_R),
-                            .VGA_G(VGA_G),
-                            .VGA_B(VGA_B),
-                            .VGA_HS(VGA_HS),
-                            .VGA_VS(VGA_VS),
-                            .VGA_BLANK(VGA_BLANK_N),
-                            .VGA_SYNC(VGA_SYNC_N),
-                            .VGA_CLK(VGA_CLK));
-                        end
-            end
-    end 
+    // // wall update
+    // initial begin : lol
+    //     for (i=0; i < 120; i = i + 1)
+    //         begin : hello
+    //             if (hwall[i] == 1'b1)
+    //             begin : klalala
+    //                 for (j=0; j < 100; j = j + 1)
+    //                     begin : wall_update
+    //                         assign colour = (vwall[i][j] == 1'b1 ? 3'b111 : 3'b000);
+
+    //                         vga_adapter VGA(
+    //                         .resetn(reset_n),
+    //                         .clock(clk),
+    //                         .colour(colour),
+    //                         .x(7'd20 + i),
+    //                         .y(6'd10 + j),
+    //                         .plot(1'b1),
+    //                         /* Signals for the DAC to drive the monitor. */
+    //                         .VGA_R(VGA_R),
+    //                         .VGA_G(VGA_G),
+    //                         .VGA_B(VGA_B),
+    //                         .VGA_HS(VGA_HS),
+    //                         .VGA_VS(VGA_VS),
+    //                         .VGA_BLANK(VGA_BLANK_N),
+    //                         .VGA_SYNC(VGA_SYNC_N),
+    //                         .VGA_CLK(VGA_CLK));
+    //                     end
+    //             end 
+    //         end
+    // end
+
+    // // dude update
+    // initial begin 
+    //     for (i=0; i < 4; i = i + 1)
+    //         begin
+    //                 for (j=0); j < 6; j = j + 1)
+    //                     assign colour = 3'b100;
+    //                     begin : dude_update
+    //                         vga_adapter VGA(
+    //                         .resetn(reset_n),
+    //                         .clock(clk),
+    //                         .colour(colour),
+    //                         .x(7'd20 + hdude + i),
+    //                         .y(6'd10 + vdude + j),
+    //                         .plot(1'b1),
+    //                         /* Signals for the DAC to drive the monitor. */
+    //                         .VGA_R(VGA_R),
+    //                         .VGA_G(VGA_G),
+    //                         .VGA_B(VGA_B),
+    //                         .VGA_HS(VGA_HS),
+    //                         .VGA_VS(VGA_VS),
+    //                         .VGA_BLANK(VGA_BLANK_N),
+    //                         .VGA_SYNC(VGA_SYNC_N),
+    //                         .VGA_CLK(VGA_CLK));
+    //                     end
+    //         end
+    // end 
 
 endmodule
 
