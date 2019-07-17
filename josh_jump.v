@@ -227,8 +227,9 @@ module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o);
                 if (hwall[i] == 1'b1)
                 begin
                     for (j=0; j < 100; j = j + 1)
-                        assign colour = (vwall[i][j] == 1'b1 ? 3'b111 : 3'b000);
-                        begin
+                        begin : wall_update
+                            assign colour = (vwall[i][j] == 1'b1 ? 3'b111 : 3'b000);
+
                             vga_adapter VGA(
                             .resetn(reset_n),
                             .clock(clk),
@@ -256,7 +257,7 @@ module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o);
             begin
                     for (j=0); j < 6; j = j + 1)
                         assign colour = 3'b100;
-                        begin
+                        begin : dude_update
                             vga_adapter VGA(
                             .resetn(reset_n),
                             .clock(clk),
