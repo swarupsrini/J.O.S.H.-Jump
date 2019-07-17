@@ -248,9 +248,35 @@ module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o)
                         end
                 end 
             end
+    end
+
+    initial begin 
+        for (i=0; i < 4; i = i + 1)
+            begin
+                    for (j=0); j < 6; j = j + 1)
+                        assign colour = 3'b100;
+                        begin
+                            vga_adapter VGA(
+                            .resetn(reset_n),
+                            .clock(clk),
+                            .colour(colour),
+                            .x(hi),
+                            .y(j),
+                            .plot(1'b1),
+                            /* Signals for the DAC to drive the monitor. */
+                            .VGA_R(VGA_R),
+                            .VGA_G(VGA_G),
+                            .VGA_B(VGA_B),
+                            .VGA_HS(VGA_HS),
+                            .VGA_VS(VGA_VS),
+                            .VGA_BLANK(VGA_BLANK_N),
+                            .VGA_SYNC(VGA_SYNC_N),
+                            .VGA_CLK(VGA_CLK));
+                        end
+            end
     end 
 
-    
+
 
 
 endmodule
@@ -441,7 +467,7 @@ module clock_divider(div, clock, clock_out, reset_n);
     output clock_out;
     wire q;
     wire qout;
-    sync_counter sc(1'b1, clock, reset_n, 1'b0, )
+    sync_counter sc(1'b1, )
 
 endmodule
 
