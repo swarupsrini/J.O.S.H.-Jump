@@ -198,7 +198,7 @@ endmodule
 module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o)
     input [99:0] vwall [119:0]; // maybe too much? 
     input [119:0] hwall;
-    input [99:0] hdude; // group of 4 1s 
+    input [:0] hdude; // group of 4 1s 
     input [119:0] vdude; // 4 pixels wide
     input clk;
 
