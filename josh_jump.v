@@ -197,7 +197,7 @@ module datapath(
 
 endmodule
 
-module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o)
+module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o);
     input [99:0] vwall [119:0]; // maybe too much? 
     input [119:0] hwall;
     input [6:0] hdude; // group of 4 1s 
@@ -278,9 +278,6 @@ module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o)
                         end
             end
     end 
-
-
-
 
 endmodule
 
