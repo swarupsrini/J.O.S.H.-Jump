@@ -460,14 +460,14 @@ module vga_adapter(
 
 endmodule
 
-module clock_divider(div, clock, clock_out, reset_n);
-    input clock;
-    output clock_out;
-    wire q;
-    wire qout;
-    sync_counter sc(1'b1, )
+// module clock_divider(div, clock, clock_out, reset_n);
+//     input clock;
+//     output clock_out;
+//     wire q;
+//     wire qout;
+//     sync_counter sc(1'b1, )
 
-endmodule
+// endmodule
 
 module sync_counter(enable, clock, reset_n, startb, endb, inc, q);
 	input enable, clock, reset_n, inc;
