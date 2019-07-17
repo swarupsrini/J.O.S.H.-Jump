@@ -6,7 +6,7 @@
 //LEDR displays result
 //HEX0 & HEX1 also displays result
 
-module fpga_top(SW, KEY, CLOCK_50, LEDR, HEX0, HEX1);
+module JOSH_Jump(SW, KEY, CLOCK_50, LEDR, HEX0, HEX1);
     input [9:0] SW;
     input [3:0] KEY;
     input CLOCK_50;
@@ -130,7 +130,7 @@ module control(
     always @(*)
     begin: enable_signals
         // By default make all our signals 0
-            startgame = 1'b0
+            startgame = 1'b0;
         case (current_state)
             //S_MENU: begin
             //    startgame = 1'b0;
@@ -157,20 +157,21 @@ module datapath(
     input clk,
     input resetn,
     input startgame,
-    input grav,
+    input grav, // should be connected to a switch input
     output reg endgame
     );
     
     // registers
     reg [99:0] vwall [119:0]; 
     reg [119:0] hwall;
-    reg [6:0] hdude = 7'd20; // where the dude starts horizontally (from 0 to 0101000 i.e. 20, negative value means dude off map)
-    reg [119:0] vdude; // 4 pixels wide
+    // top left coordinates of dude
+    reg [6:0] hdude = 7'd20; // from 0 to 20
+    reg [7:0] vdude = 8'd100; // from 6 to 100
     
     reg [4:0] surr;
+    wire inc = 1'b1;
 
-    always @(posedge clk)
-    begin
+    always @(posedge clk) begin
         // 0. resetting
         if (!reset_n)
         begin
@@ -181,9 +182,12 @@ module datapath(
             // 1. collision check
             // a. vertical
             if (!grav)  // grav down
-                surr = {vwall[]
+                surr = {vwall[hdude][vdude-1'b1], vwall[hdude+1'b1][vdude-1'b1], vwall[hdude+2'd2][vdude-1'b1], vwall[hdude+2'd3][vdude-1'b1]};
             else        // grav up
-                surr = 
+                surr = {vwall[hdude][vdude+1'b1], vwall[hdude+1'b1][vdude+1'b1], vwall[hdude+2'd2][vdude-1'b1], vwall[hdude+2'd3][vdude-1'b1]};
+            
+            // b. horizontal
+            if (hwall[1][])
         end
 
     end
