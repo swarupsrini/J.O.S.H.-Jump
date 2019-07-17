@@ -221,11 +221,11 @@ module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o);
     integer i,j;
 
     // wall update
-    initial begin 
+    initial begin : lol
         for (i=0; i < 120; i = i + 1)
-            begin
+            begin : hello
                 if (hwall[i] == 1'b1)
-                begin
+                begin : klalala
                     for (j=0; j < 100; j = j + 1)
                         begin : wall_update
                             assign colour = (vwall[i][j] == 1'b1 ? 3'b111 : 3'b000);
