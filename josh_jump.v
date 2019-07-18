@@ -45,8 +45,11 @@ module control(
     
     // signals to datapath
     output reg ingame // 0 for menu, 1 for game
-    );
 
+    output LEDR;
+    );
+    assign LEDR[1:0] = current_state;
+    
     reg [5:0] current_state, next_state; 
     
     localparam  S_MENU        = 2'd0,
