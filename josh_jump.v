@@ -102,7 +102,7 @@ module datapath(
 
     // registers/wires
     reg [99:0] vwall [119:0]; 
-    reg [119999:0] vwall1;
+    reg [11999:0] vwall1;
     reg [119:0] hwall;
     // top left coordinates of dude
     reg [6:0] hdude = 7'd20; // from 0 to 20
