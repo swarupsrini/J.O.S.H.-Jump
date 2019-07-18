@@ -210,7 +210,7 @@ module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h
 		VGA_BLANK_N,					//	VGA BLANK
 		VGA_SYNC_N;                     //	VGA SYNC
 
-	wire [9:0]	VGA_R,   			    //	VGA Red[9:0]
+	output [9:0]	VGA_R,   			    //	VGA Red[9:0]
 		VGA_G,	 						//	VGA Green[9:0]
 		VGA_B;         					//	VGA Blue[9:0]
 
