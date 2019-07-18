@@ -196,7 +196,7 @@ module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h
 		VGA_G,	 						//	VGA Green[9:0]
 		VGA_B;         					//	VGA Blue[9:0]
 
-    reg [2:0] colour1, colour2;
+    reg [2:0] colourFinal;
 
     reg [6:0]h_counter_w;
     reg [6:0]v_counter_w;
@@ -217,39 +217,43 @@ module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h
                 begin 
                     if (v_counter_w < 7'd100)
                         begin
-                            colour1 = (vwall[h_counter_w][v_counter_w] == 1'b1 ? 3'b111 : 3'b000);
+                            colourFinal = (vwall[h_counter_w][v_counter_w] == 1'b1 ? 3'b111 : 3'b000);
 
                              v_counter_w = v_counter_w + 1;
+                             v_final = v_counter_w;
                         end
                     else 
                         begin 
                             h_counter_w = h_counter_w + 1;
                             v_counter_w = 7'd10;
+                            h_final = h_counter_w;
                         end
                 end
 
-                if (h_counter_d < 4'd4) 
+                else if (h_counter_d < 4'd4) 
                 begin 
                     if (v_counter_d < 4'd6)
                         begin
-                            colour2 = 3'b100;
+                            colourFinal = 3'b100;
 
-                             v_counter_d = v_counter_d + 1;
+                            v_counter_d = v_counter_d + 1;
+                            v_final = v_counter_d + vdude;
                         end
                     else 
                         begin 
                             h_counter_d = h_counter_d + 1;
                             v_counter_d = 4'd0;
+                            h_final = h_counter_d + hdude;
                         end
                 end
         end
 
-        vga_adapter VGA1(
+        vga_adapter VGA(
                              .resetn(reset_n),
                              .clock(clk),
-                             .colour(colour1),
-                             .x(h_counter_w),
-                             .y(v_counter_w),
+                             .colour(colourFinal),
+                             .x(h_final),
+                             .y(v_final),
                              .plot(1'b1),
                              /* Signals for the DAC to drive the monitor. */
                              .VGA_R(VGA_R),
