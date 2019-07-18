@@ -105,7 +105,7 @@ module control(
     input endgame,
     
     // signals to datapath
-    output reg startgame // 0 for menu, 1 for game
+    output reg ingame // 0 for menu, 1 for game
     );
 
     reg [5:0] current_state, next_state; 
@@ -130,13 +130,13 @@ module control(
     always @(*)
     begin: enable_signals
         // By default make all our signals 0
-            startgame = 1'b0;
+            ingame = 1'b0;
         case (current_state)
             //S_MENU: begin
             //    startgame = 1'b0;
             //end
             S_GAME: begin
-                startgame = 1'b1;
+                ingame = 1'b1;
             end
             
         // default:  // don't need default since we already made sure all of our outputs were assigned a value at the start of the always block
@@ -156,7 +156,7 @@ endmodule
 module datapath(
     input clk,
     input resetn,
-    input startgame,
+    input ingame,
     input grav, // should be connected to a switch input
     output reg endgame
     );
@@ -172,6 +172,11 @@ module datapath(
     wire inc = 1'b1;
     wire xdude = 4'd4; // if we change this we need to change the collision check to be a for loop
     wire ydude = 4'd6;
+    reg [99:0] nextwall;
+    integer i;
+
+    // modules
+    update_screen us(vwall, hwall, vdude, hdude, clk, reset_n,)
 
     always @(posedge clk) begin
         // 0. resetting
@@ -195,9 +200,20 @@ module datapath(
                 end
             end
 
-            
+            // 2. shifting
+            // TODO: use RAM to get next walls from the map
+            nextwall = 100'b1111111111111111111100000000000000000000000000000000000000000000000000000000000011111111111111111111;
+            if (|nextwall == 0) begin
+                endgame = 1'b1;
             end
+            for (i=0; i<119; i=i+1) begin
+                vwall[i] = vwall[i+1];
+                hwall[i] = hwall[i+1];
+            end
+            vwall[119] = nextwall;
 
+            // 3. drawing
+            
     end
 
 endmodule
