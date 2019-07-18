@@ -45,14 +45,9 @@ module control(
     
     // signals to datapath
     output reg ingame, // 0 for menu, 1 for game
-
-    output [9:0] LEDR
     );
 
-    reg [5:0] current_state, next_state; 
-
-    assign LEDR[1:0] = current_state;
-    assign LEDR[3:2] = 2'b11;
+    reg [5:0] current_state, next_state;
     
     localparam  S_MENU        = 2'd0,
                 S_MENU_WAIT   = 2'd1,
@@ -139,6 +134,7 @@ module datapath(
             endgame = 1'b1;
         end
         else if (!ingame) begin
+            endgame = 1'b0;
             for (i=0; i<120; i=i+1) begin
             for (j=0; j<100; j=j+1) begin
                 vwall[i][j] = 1'b0;
