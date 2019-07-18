@@ -221,17 +221,81 @@ module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o);
 
     wire [2:0] colour;
 
-    h_counter = 7'b0010100;
-    v_counter = 
-    v_counter = 7'b0001010;
-
-    // get x value
+    reg [6:0]h_counter_w = 7'b0010100; // 20
+    reg [6:0]v_counter_w = 7'b0001010; // 10
+    reg [3:0]h_counter_d = 4'b0; // 20
+    reg [3:0]v_counter_d = 4'b0; // 10
+    
+    // WALLS
     always @(posedge clk)
         begin 
-            if (h_counter < 7'b1111000)
+            if (h_counter_w < 7'b1111000) // 120 
                 begin 
-                    h_counter <= h_counter + 1;
-                    
+                    if (v_counter_w < 7'd100)
+                        begin
+                            assign colour = (vwall[h_counter_w][v_counter_w] == 1'b1 ? 3'b111 : 3'b000);
+
+                            vga_adapter VGA(
+                             .resetn(reset_n),
+                             .clock(clk),
+                             .colour(colour),
+                             .x(h_counter_w),
+                             .y(v_counter_w),
+                             .plot(1'b1),
+                             /* Signals for the DAC to drive the monitor. */
+                             .VGA_R(VGA_R),
+                             .VGA_G(VGA_G),
+                             .VGA_B(VGA_B),
+                             .VGA_HS(VGA_HS),
+                             .VGA_VS(VGA_VS),
+                             .VGA_BLANK(VGA_BLANK_N),
+                             .VGA_SYNC(VGA_SYNC_N),
+                             .VGA_CLK(VGA_CLK));
+
+                             v_counter_w = v_counter_w + 1;
+                        end
+                    else 
+                        begin 
+                            h_counter_w = h_counter_w + 1;
+                            v_counter_w = 7'd10;
+                        end
+                end
+        end
+
+
+        // DUDE
+        always @(posedge clk)
+        begin 
+            if (h_counter_d < 4'd4) 
+                begin 
+                    if (v_counter_d < 4'd6)
+                        begin
+                            assign colour = 3'b100;
+
+                            vga_adapter VGA(
+                             .resetn(reset_n),
+                             .clock(clk),
+                             .colour(colour),
+                             .x(hdude + h_counter_d),
+                             .y(vdude + v_counter_d),
+                             .plot(1'b1),
+                             /* Signals for the DAC to drive the monitor. */
+                             .VGA_R(VGA_R),
+                             .VGA_G(VGA_G),
+                             .VGA_B(VGA_B),
+                             .VGA_HS(VGA_HS),
+                             .VGA_VS(VGA_VS),
+                             .VGA_BLANK(VGA_BLANK_N),
+                             .VGA_SYNC(VGA_SYNC_N),
+                             .VGA_CLK(VGA_CLK));
+
+                             v_counter_d = v_counter_d + 1;
+                        end
+                    else 
+                        begin 
+                            h_counter_d = h_counter_d + 1;
+                            v_counter_d = 4'd0;
+                        end
                 end
         end
 
