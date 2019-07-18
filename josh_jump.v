@@ -52,6 +52,7 @@ module control(
     reg [5:0] current_state, next_state; 
 
     assign LEDR[1:0] = current_state;
+    assign LEDR[3:2] = 2'b11;
     
     localparam  S_MENU        = 2'd0,
                 S_MENU_WAIT   = 2'd1,
