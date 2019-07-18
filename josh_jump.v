@@ -6,11 +6,11 @@
 //LEDR displays result
 //HEX0 & HEX1 also displays result
 
-module JOSH_Jump();
-    
-endmodule
+module JOSH_Jump(SW, KEY, CLOCK_50, LEDR, HEX0, HEX1, VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_H, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
+    // vga
+    output VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_H, VGA_SYNC_N;
+    output [9:0] VGA_R, VGA_G, VGA_B;
 
-module JOSH_Jump(SW, KEY, CLOCK_50, LEDR, HEX0, HEX1);
     input [9:0] SW;
     input [3:0] KEY;
     input CLOCK_50;
@@ -29,7 +29,7 @@ module JOSH_Jump(SW, KEY, CLOCK_50, LEDR, HEX0, HEX1);
     assign go = SW[1];
     
     control c0 (CLOCK_50, reset_n, grav, go, endgame, ingame);
-    datapath d0 (CLOCK_50, reset_n, ingame, grav, endgame);
+    datapath d0 (CLOCK_50, reset_n, ingame, grav, endgame, VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_H, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
 
 endmodule 
                 
@@ -98,6 +98,7 @@ module datapath(
     input ingame,
     input grav, // should be connected to a switch input
     output reg endgame
+    , VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_H, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
     );
 
     // ints
