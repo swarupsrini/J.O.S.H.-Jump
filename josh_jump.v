@@ -187,12 +187,14 @@ module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h
 		VGA_G,	 						//	VGA Green[9:0]
 		VGA_B;         					//	VGA Blue[9:0]
 
-    wire [2:0] colour1, colour2;
+    reg [2:0] colour1, colour2;
 
     reg [6:0]h_counter_w;
     reg [6:0]v_counter_w;
     reg [3:0]h_counter_d;
     reg [3:0]v_counter_d;
+    reg [6:0]h_final;
+    reg [6:0]v_final;
     
     // WALLS
     always @(posedge clk)
@@ -250,22 +252,22 @@ module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h
                              .VGA_SYNC(VGA_SYNC_N),
                              .VGA_CLK(VGA_CLK));
 
-        vga_adapter VGA2(
-                             .resetn(reset_n),
-                             .clock(clk),
-                             .colour(colour2),
-                             .x(hdude + h_counter_d),
-                             .y(vdude + v_counter_d),
-                             .plot(1'b1),
-                             /* Signals for the DAC to drive the monitor. */
-                             .VGA_R(VGA_R),
-                             .VGA_G(VGA_G),
-                             .VGA_B(VGA_B),
-                             .VGA_HS(VGA_HS),
-                             .VGA_VS(VGA_VS),
-                             .VGA_BLANK(VGA_BLANK_N),
-                             .VGA_SYNC(VGA_SYNC_N),
-                             .VGA_CLK(VGA_CLK));
+        // vga_adapter VGA2(
+        //                      .resetn(reset_n),
+        //                      .clock(clk),
+        //                      .colour(colour2),
+        //                      .x(hdude + h_counter_d),
+        //                      .y(vdude + v_counter_d),
+        //                      .plot(1'b1),
+        //                      /* Signals for the DAC to drive the monitor. */
+        //                      .VGA_R(VGA_R),
+        //                      .VGA_G(VGA_G),
+        //                      .VGA_B(VGA_B),
+        //                      .VGA_HS(VGA_HS),
+        //                      .VGA_VS(VGA_VS),
+        //                      .VGA_BLANK(VGA_BLANK_N),
+        //                      .VGA_SYNC(VGA_SYNC_N),
+        //                      .VGA_CLK(VGA_CLK));
         
 
         // // DUDE
