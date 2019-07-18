@@ -202,12 +202,13 @@ module datapath(
 
 endmodule
 
-module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o);
+module update_screen(vwall, hwall, vdude, hdude, h_counter_w, v_counter_w, h_counter_d, v_counter_d, clk, reset_n);
     input [99:0] vwall [119:0]; // maybe too much? 
     input [119:0] hwall;
     input [6:0] hdude; // group of 4 1s 
     input [7:0] vdude; // 4 pixels wide
     input clk;
+    input reset_n;
 
     wire VGA_CLK,   					//	VGA Clock
 	    VGA_HS,							//	VGA H_SYNC
@@ -219,12 +220,12 @@ module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o);
 		VGA_G,	 						//	VGA Green[9:0]
 		VGA_B;         					//	VGA Blue[9:0]
 
-    wire [2:0] colour;
+    wire [2:0] colour1, colour2;
 
-    reg [6:0]h_counter_w = 7'b0010100; // 20
-    reg [6:0]v_counter_w = 7'b0001010; // 10
-    reg [3:0]h_counter_d = 4'b0; // 20
-    reg [3:0]v_counter_d = 4'b0; // 10
+    input reg [6:0]h_counter_w = 7'b0010100; // 20
+    input reg [6:0]v_counter_w = 7'b0001010; // 10
+    input reg [3:0]h_counter_d = 4'b0; 
+    input reg [3:0]v_counter_d = 4'b0; 
     
     // WALLS
     always @(posedge clk)
@@ -233,12 +234,37 @@ module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o);
                 begin 
                     if (v_counter_w < 7'd100)
                         begin
-                            assign colour = (vwall[h_counter_w][v_counter_w] == 1'b1 ? 3'b111 : 3'b000);
+                            assign colour1 = (vwall[h_counter_w][v_counter_w] == 1'b1 ? 3'b111 : 3'b000);
 
-                            vga_adapter VGA(
+                             v_counter_w = v_counter_w + 1;
+                        end
+                    else 
+                        begin 
+                            h_counter_w = h_counter_w + 1;
+                            v_counter_w = 7'd10;
+                        end
+                end
+
+                if (h_counter_d < 4'd4) 
+                begin 
+                    if (v_counter_d < 4'd6)
+                        begin
+                            assign colour2 = 3'b100;
+
+                             v_counter_d = v_counter_d + 1;
+                        end
+                    else 
+                        begin 
+                            h_counter_d = h_counter_d + 1;
+                            v_counter_d = 4'd0;
+                        end
+                end
+        end
+
+        vga_adapter VGA1(
                              .resetn(reset_n),
                              .clock(clk),
-                             .colour(colour),
+                             .colour(colour1),
                              .x(h_counter_w),
                              .y(v_counter_w),
                              .plot(1'b1),
@@ -252,30 +278,10 @@ module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o);
                              .VGA_SYNC(VGA_SYNC_N),
                              .VGA_CLK(VGA_CLK));
 
-                             v_counter_w = v_counter_w + 1;
-                        end
-                    else 
-                        begin 
-                            h_counter_w = h_counter_w + 1;
-                            v_counter_w = 7'd10;
-                        end
-                end
-        end
-
-
-        // DUDE
-        always @(posedge clk)
-        begin 
-            if (h_counter_d < 4'd4) 
-                begin 
-                    if (v_counter_d < 4'd6)
-                        begin
-                            assign colour = 3'b100;
-
-                            vga_adapter VGA(
+        vga_adapter VGA2(
                              .resetn(reset_n),
                              .clock(clk),
-                             .colour(colour),
+                             .colour(colour2),
                              .x(hdude + h_counter_d),
                              .y(vdude + v_counter_d),
                              .plot(1'b1),
@@ -288,19 +294,46 @@ module update_screen(vwall, hwall, vdude, hdude, clk, reset_n, o);
                              .VGA_BLANK(VGA_BLANK_N),
                              .VGA_SYNC(VGA_SYNC_N),
                              .VGA_CLK(VGA_CLK));
+        
 
-                             v_counter_d = v_counter_d + 1;
-                        end
-                    else 
-                        begin 
-                            h_counter_d = h_counter_d + 1;
-                            v_counter_d = 4'd0;
-                        end
-                end
-        end
+        // // DUDE
+        // always @(posedge clk)
+        // begin 
+        //     if (h_counter_d < 4'd4) 
+        //         begin 
+        //             if (v_counter_d < 4'd6)
+        //                 begin
+        //                     assign colour = 3'b100;
+
+        //                     vga_adapter VGA(
+        //                      .resetn(reset_n),
+        //                      .clock(clk),
+        //                      .colour(colour),
+        //                      .x(hdude + h_counter_d),
+        //                      .y(vdude + v_counter_d),
+        //                      .plot(1'b1),
+        //                      /* Signals for the DAC to drive the monitor. */
+        //                      .VGA_R(VGA_R),
+        //                      .VGA_G(VGA_G),
+        //                      .VGA_B(VGA_B),
+        //                      .VGA_HS(VGA_HS),
+        //                      .VGA_VS(VGA_VS),
+        //                      .VGA_BLANK(VGA_BLANK_N),
+        //                      .VGA_SYNC(VGA_SYNC_N),
+        //                      .VGA_CLK(VGA_CLK));
+
+        //                      v_counter_d = v_counter_d + 1;
+        //                 end
+        //             else 
+        //                 begin 
+        //                     h_counter_d = h_counter_d + 1;
+        //                     v_counter_d = 4'd0;
+        //                 end
+        //         end
+        // end
 
     // integer i,j;
-
+ 
     // // wall update
     // initial begin : lol
     //     for (i=0; i < 120; i = i + 1)
