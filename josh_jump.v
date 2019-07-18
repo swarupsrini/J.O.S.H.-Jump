@@ -17,26 +17,26 @@ module JOSH_Jump(
     output [9:0] VGA_R, VGA_G, VGA_B
     );
 
-    wire reset_n;
+    wire resetn;
     wire grav;
     wire ingame;
     wire go;
 
     wire endgame;
 
-    assign reset_n = KEY[0];
+    assign resetn = KEY[0];
     assign grav = SW[0];
     assign go = SW[1];
     
-    control c0 (CLOCK_50, reset_n, grav, go, endgame, ingame);
-    datapath d0 (CLOCK_50, reset_n, ingame, grav, endgame, VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
+    control c0 (CLOCK_50, resetn, grav, go, endgame, ingame);
+    datapath d0 (CLOCK_50, resetn, ingame, grav, endgame, VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
 
 endmodule 
                 
 
 module control(
     input clk,
-    input reset_n,
+    input resetn,
     // user input
     input grav,
     input go,
@@ -85,7 +85,7 @@ module control(
     // current_state registers
     always@(posedge clk)
     begin: state_FFs
-        if(!reset_n)
+        if(!resetn)
             current_state <= S_MENU;
         else
             current_state <= next_state;
@@ -94,7 +94,7 @@ endmodule
 
 module datapath(
     input clk,
-    input reset_n,
+    input resetn,
     input ingame,
     input grav, // should be connected to a switch input
     output reg endgame,
@@ -126,11 +126,11 @@ module datapath(
     reg [3:0]v_counter_d = 4'b0;
 
     // modules
-    update_screen us(vwall1, hwall, vdude, hdude, h_counter_w, v_counter_w, h_counter_d, v_counter_d, clk, reset_n, VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
+    update_screen us(vwall1, hwall, vdude, hdude, h_counter_w, v_counter_w, h_counter_d, v_counter_d, clk, resetn, VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
 
     always @(posedge clk) begin
         // 0. resetting
-        if (!reset_n) begin
+        if (!resetn) begin
             endgame = 1'b1;
         end
         else if (!ingame) begin
@@ -190,7 +190,7 @@ module datapath(
 
 endmodule
 
-module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h_counter_d_i, v_counter_d_i, clk, reset_n, VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
+module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h_counter_d_i, v_counter_d_i, clk, resetn, VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
     input [11999:0] vwall; // maybe too much? 
     input [119:0] hwall;
     input [6:0] hdude; // group of 4 1s 
@@ -200,7 +200,7 @@ module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h
     input [3:0] h_counter_d_i;
     input [3:0] v_counter_d_i;
     input clk;
-    input reset_n;
+    input resetn;
 
     output VGA_CLK,   					//	VGA Clock
 	    VGA_HS,							//	VGA H_SYNC
@@ -265,7 +265,7 @@ module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h
         end
 
         vga_adapter VGA(
-                             .reset_n(reset_n),
+                             .resetn(resetn),
                              .clock(clk),
                              .colour(colourFinal),
                              .x(h_final),
@@ -282,7 +282,7 @@ module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h
                              .VGA_CLK(VGA_CLK));
 
         // vga_adapter VGA2(
-        //                      .reset_n(reset_n),
+        //                      .resetn(resetn),
         //                      .clock(clk),
         //                      .colour(colour2),
         //                      .x(hdude + h_counter_d),
@@ -309,7 +309,7 @@ module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h
         //                     assign colour = 3'b100;
 
         //                     vga_adapter VGA(
-        //                      .reset_n(reset_n),
+        //                      .resetn(resetn),
         //                      .clock(clk),
         //                      .colour(colour),
         //                      .x(hdude + h_counter_d),
@@ -348,7 +348,7 @@ module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h
     //                         assign colour = (vwall[i][j] == 1'b1 ? 3'b111 : 3'b000);
 
     //                         vga_adapter VGA(
-    //                         .reset_n(reset_n),
+    //                         .resetn(resetn),
     //                         .clock(clk),
     //                         .colour(colour),
     //                         .x(7'd20 + i),
@@ -376,7 +376,7 @@ module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h
     //                     assign colour = 3'b100;
     //                     begin : dude_update
     //                         vga_adapter VGA(
-    //                         .reset_n(reset_n),
+    //                         .resetn(resetn),
     //                         .clock(clk),
     //                         .colour(colour),
     //                         .x(7'd20 + hdude + i),
@@ -397,7 +397,7 @@ module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h
 
 endmodule
 
-// module clock_divider(div, clock, clock_out, reset_n);
+// module clock_divider(div, clock, clock_out, resetn);
 //     input clock;
 //     output clock_out;
 //     wire q;
@@ -406,14 +406,14 @@ endmodule
 
 // endmodule
 
-module sync_counter(enable, clock, reset_n, startb, endb, inc, q);
-	input enable, clock, reset_n, inc;
+module sync_counter(enable, clock, resetn, startb, endb, inc, q);
+	input enable, clock, resetn, inc;
 	input [27:0] startb, endb;
 	output reg [27:0] q;
 	
 	always @(posedge clock)
 	begin
-		if (reset_n == 1'b0)
+		if (resetn == 1'b0)
 			q <= startb;
 		else if (enable == 1'b1)
 			if (q == endb)
