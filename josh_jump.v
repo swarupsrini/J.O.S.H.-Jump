@@ -95,9 +95,14 @@ module datapath(
     input grav, // should be connected to a switch input
     output reg endgame
     );
-    
-    // registers
+
+    // ints
+    integer i;
+    integer j;
+
+    // registers/wires
     reg [99:0] vwall [119:0]; 
+    reg [119999:0] vwall1;
     reg [119:0] hwall;
     // top left coordinates of dude
     reg [6:0] hdude = 7'd20; // from 0 to 20
@@ -108,15 +113,13 @@ module datapath(
     reg xdude = 4'd4; // if we change this we need to change the collision check to be a for loop
     reg ydude = 4'd6;
     reg [99:0] nextwall;
-    integer i;
-    integer j;
     reg [6:0]h_counter_w = 7'd120; // 20 - 120 when start, change to 20
     reg [6:0]v_counter_w = 7'b0001010; // 10
     reg [3:0]h_counter_d = 4'd4; // 0 - 4 when start change to 0
     reg [3:0]v_counter_d = 4'b0;
 
     // modules
-    update_screen us(vwall, hwall, vdude, hdude, h_counter_w, v_counter_w, h_counter_d, v_counter_d, clk, reset_n);
+    update_screen us(vwall1, hwall, vdude, hdude, h_counter_w, v_counter_w, h_counter_d, v_counter_d, clk, reset_n);
 
     always @(posedge ingame) begin
         for (i=0; i<100; i=i+1) begin
@@ -167,6 +170,11 @@ module datapath(
             vwall[119] = nextwall;
 
             // 3. drawing
+            for (i=0; i<100; i=i+1) begin
+                for (j=0; j<120; j=j+1) begin
+                    vwall1[i*j] = vwall[i][j];
+                end
+            end
             h_counter_w = 7'd20;
             h_counter_d = 4'd0;
         end
