@@ -193,7 +193,7 @@ module datapath(
 
 endmodule
 
-module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h_counter_d_i, v_counter_d_i, clk, reset_n);
+module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h_counter_d_i, v_counter_d_i, clk, reset_n, );
     input [11999:0] vwall; // maybe too much? 
     input [119:0] hwall;
     input [6:0] hdude; // group of 4 1s 
@@ -205,13 +205,13 @@ module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h
     input clk;
     input reset_n;
 
-    localparam VGA_CLK,   					//	VGA Clock
+    output VGA_CLK,   					//	VGA Clock
 	    VGA_HS,							//	VGA H_SYNC
         VGA_VS,							//	VGA V_SYNC
 		VGA_BLANK_N,					//	VGA BLANK
 		VGA_SYNC_N;                     //	VGA SYNC
 
-	wire [9:0]	VGA_R,   			    //	VGA Red[9:0]
+	output [9:0]	VGA_R,   			    //	VGA Red[9:0]
 		VGA_G,	 						//	VGA Green[9:0]
 		VGA_B;         					//	VGA Blue[9:0]
 
