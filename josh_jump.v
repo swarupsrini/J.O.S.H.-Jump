@@ -104,11 +104,12 @@ module datapath(
     reg [7:0] vdude = 8'd100; // from 6 to 100
     
     reg [4:0] surr;
-    wire inc = 1'b1;
-    wire xdude = 4'd4; // if we change this we need to change the collision check to be a for loop
-    wire ydude = 4'd6;
+    reg inc = 1'b1;
+    reg xdude = 4'd4; // if we change this we need to change the collision check to be a for loop
+    reg ydude = 4'd6;
     reg [99:0] nextwall;
     integer i;
+    integer j;
     reg [6:0]h_counter_w = 7'd120; // 20 - 120 when start, change to 20
     reg [6:0]v_counter_w = 7'b0001010; // 10
     reg [3:0]h_counter_d = 4'd4; // 0 - 4 when start change to 0
@@ -118,7 +119,11 @@ module datapath(
     update_screen us(vwall, hwall, vdude, hdude, h_counter_w, v_counter_w, h_counter_d, v_counter_d, clk, reset_n);
 
     always @(posedge ingame) begin
-        vwall = {0};
+        for (i=0; i<100; i=i+1) begin
+            for (j=0; j<120; j=j+1) begin
+                vwall[i][j] = 1'b0;
+            end
+        end
         hwall = {0};
         hdude = 7'd20;
         vdude = 8'd100;
@@ -174,6 +179,10 @@ module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h
     input [119:0] hwall;
     input [6:0] hdude; // group of 4 1s 
     input [7:0] vdude; // 4 pixels wide
+    input [6:0] h_counter_w_i;
+    input [6:0] v_counter_w_i;
+    input [3:0] h_counter_d_i;
+    input [3:0] v_counter_d_i;
     input clk;
     input reset_n;
 
@@ -187,7 +196,7 @@ module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h
 		VGA_G,	 						//	VGA Green[9:0]
 		VGA_B;         					//	VGA Blue[9:0]
 
-    wire [2:0] colour1, colour2;
+    reg [2:0] colour1, colour2;
 
     reg [6:0]h_counter_w;
     reg [6:0]v_counter_w;
@@ -206,7 +215,7 @@ module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h
                 begin 
                     if (v_counter_w < 7'd100)
                         begin
-                            assign colour1 = (vwall[h_counter_w][v_counter_w] == 1'b1 ? 3'b111 : 3'b000);
+                            colour1 = (vwall[h_counter_w][v_counter_w] == 1'b1 ? 3'b111 : 3'b000);
 
                              v_counter_w = v_counter_w + 1;
                         end
@@ -221,7 +230,7 @@ module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h
                 begin 
                     if (v_counter_d < 4'd6)
                         begin
-                            assign colour2 = 3'b100;
+                            colour2 = 3'b100;
 
                              v_counter_d = v_counter_d + 1;
                         end
