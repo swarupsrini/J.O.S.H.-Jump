@@ -16,13 +16,15 @@ module JOSH_Jump(SW, KEY, CLOCK_50, LEDR, HEX0, HEX1);
     wire resetn;
     wire grav;
     wire ingame;
+    wire go;
 
     wire endgame;
 
     assign resetn = KEY[0];
     assign grav = SW[0];
+    assign go = SW[1];
     
-    control c0 (CLOCK_50, reset_n, grav, endgame, ingame);
+    control c0 (CLOCK_50, reset_n, grav, go, endgame, ingame);
     datapath d0 (CLOCK_50, reset_n, ingame, grav, endgame);
 
 endmodule 
@@ -33,6 +35,7 @@ module control(
     input resetn,
     // user input
     input grav,
+    input go,
     // signals from datapath
     input endgame,
     
@@ -51,7 +54,7 @@ module control(
     begin: state_table 
             case (current_state)
                 S_MENU: next_state = go ? S_MENU_WAIT : S_MENU;
-                S_MENU_WAIT: next_state = S_GAME_START;
+                S_MENU_WAIT: next_state = S_GAME;
                 S_GAME: next_state = endgame ? S_MENU : S_GAME;
             default: next_state = S_MENU;
         endcase
