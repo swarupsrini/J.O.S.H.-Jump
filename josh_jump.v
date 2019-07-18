@@ -6,16 +6,16 @@
 //LEDR displays result
 //HEX0 & HEX1 also displays result
 
-module JOSH_Jump(SW, KEY, CLOCK_50, LEDR, HEX0, HEX1, VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_H, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
-    // vga
-    output VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_H, VGA_SYNC_N;
-    output [9:0] VGA_R, VGA_G, VGA_B;
-
+module JOSH_Jump(
     input [9:0] SW;
     input [3:0] KEY;
     input CLOCK_50;
     output [9:0] LEDR;
     output [6:0] HEX0, HEX1;
+
+    output VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_H, VGA_SYNC_N;
+    output [9:0] VGA_R, VGA_G, VGA_B;
+    );
 
     wire resetn;
     wire grav;
@@ -98,7 +98,8 @@ module datapath(
     input ingame,
     input grav, // should be connected to a switch input
     output reg endgame
-    , VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_H, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
+    output VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_H, VGA_SYNC_N;
+    output [9:0] VGA_R, VGA_G, VGA_B;
     );
 
     // ints
@@ -124,7 +125,7 @@ module datapath(
     reg [3:0]v_counter_d = 4'b0;
 
     // modules
-    update_screen us(vwall1, hwall, vdude, hdude, h_counter_w, v_counter_w, h_counter_d, v_counter_d, clk, reset_n);
+    update_screen us(vwall1, hwall, vdude, hdude, h_counter_w, v_counter_w, h_counter_d, v_counter_d, clk, reset_n, VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_H, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
 
     // whenever game starts
     always @(posedge ingame) begin
@@ -193,7 +194,7 @@ module datapath(
 
 endmodule
 
-module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h_counter_d_i, v_counter_d_i, clk, reset_n, );
+module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h_counter_d_i, v_counter_d_i, clk, reset_n, VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_H, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
     input [11999:0] vwall; // maybe too much? 
     input [119:0] hwall;
     input [6:0] hdude; // group of 4 1s 
