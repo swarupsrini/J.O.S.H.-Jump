@@ -166,7 +166,7 @@ module datapath(
 
 endmodule
 
-module update_screen(vwall, hwall, vdude, hdude, h_counter_w, v_counter_w, h_counter_d, v_counter_d, clk, reset_n);
+module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h_counter_d_i, v_counter_d_i, clk, reset_n);
     input [99:0] vwall [119:0]; // maybe too much? 
     input [119:0] hwall;
     input [6:0] hdude; // group of 4 1s 
@@ -186,14 +186,19 @@ module update_screen(vwall, hwall, vdude, hdude, h_counter_w, v_counter_w, h_cou
 
     wire [2:0] colour1, colour2;
 
-    input [6:0]h_counter_w = 7'b0010100; // 20
-    input [6:0]v_counter_w = 7'b0001010; // 10
-    input [3:0]h_counter_d = 4'b0; 
-    input [3:0]v_counter_d = 4'b0; 
+    reg [6:0]h_counter_w;
+    reg [6:0]v_counter_w;
+    reg [3:0]h_counter_d;
+    reg [3:0]v_counter_d;
     
     // WALLS
     always @(posedge clk)
         begin 
+            h_counter_w = h_counter_w_i;
+            v_counter_w = v_counter_w_i;
+            h_counter_d = h_counter_d_i;
+            v_counter_d = v_counter_d_i;
+
             if (h_counter_w < 7'b1111000) // 120 
                 begin 
                     if (v_counter_w < 7'd100)
