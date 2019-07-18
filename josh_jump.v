@@ -14,86 +14,18 @@ module JOSH_Jump(SW, KEY, CLOCK_50, LEDR, HEX0, HEX1);
     output [6:0] HEX0, HEX1;
 
     wire resetn;
-    wire go;
+    wire grav;
+    wire ingame;
 
-    wire [7:0] data_result;
-    assign go = ~KEY[1];
+    wire endgame;
+
     assign resetn = KEY[0];
+    assign grav = SW[0];
+    
+    control c0 (CLOCK_50, reset_n, grav, endgame, ingame);
+    datapath d0 (CLOCK_50, reset_n, ingame, grav, endgame);
 
-    part2 u0(
-        .clk(CLOCK_50),
-        .resetn(resetn),
-        .go(go),
-        .data_in(SW[7:0]),
-        .data_result(data_result)
-    );
-      
-    assign LEDR[7:0] = data_result;
-
-    hex_decoder H0(
-        .hex_digit(data_result[3:0]), 
-        .segments(HEX0)
-        );
-        
-    hex_decoder H1(
-        .hex_digit(data_result[7:4]), 
-        .segments(HEX1)
-        );
-
-endmodule
-
-module part2(
-    input clk,
-    input resetn,
-    input go,
-    input [7:0] data_in,
-    output [7:0] data_result
-    );
-
-    // lots of wires to connect our datapath and control
-    wire ld_a, ld_b, ld_c, ld_x, ld_r;
-    wire ld_alu_out;
-    wire [1:0]  alu_select_a, alu_select_b;
-    wire alu_op;
-
-    control C0(
-        .clk(clk),
-        .resetn(resetn),
-        
-        .go(go),
-        
-        .ld_alu_out(ld_alu_out), 
-        .ld_x(ld_x),
-        .ld_a(ld_a),
-        .ld_b(ld_b),
-        .ld_c(ld_c), 
-        .ld_r(ld_r), 
-        
-        .alu_select_a(alu_select_a),
-        .alu_select_b(alu_select_b),
-        .alu_op(alu_op)
-    );
-
-    datapath D0(
-        .clk(clk),
-        .resetn(resetn),
-
-        .ld_alu_out(ld_alu_out), 
-        .ld_x(ld_x),
-        .ld_a(ld_a),
-        .ld_b(ld_b),
-        .ld_c(ld_c), 
-        .ld_r(ld_r), 
-
-        .alu_select_a(alu_select_a),
-        .alu_select_b(alu_select_b),
-        .alu_op(alu_op),
-
-        .data_in(data_in),
-        .data_result(data_result)
-    );
-                
- endmodule        
+endmodule 
                 
 
 module control(
@@ -174,9 +106,23 @@ module datapath(
     wire ydude = 4'd6;
     reg [99:0] nextwall;
     integer i;
+    reg [6:0]h_counter_w = 7'd120; // 20 - 120 when start, change to 20
+    reg [6:0]v_counter_w = 7'b0001010; // 10
+    reg [3:0]h_counter_d = 4'd4; // 0 - 4 when start change to 0
+    reg [3:0]v_counter_d = 4'b0;
 
     // modules
-    update_screen us(vwall, hwall, vdude, hdude, clk, reset_n,)
+    update_screen us(vwall, hwall, vdude, hdude, h_counter_w, v_counter_w, h_counter_d, v_counter_d, clk, reset_n);
+
+    always @(posedge ingame) begin
+        vwall = {0};
+        hwall = {0};
+        hdude = 7'd20;
+        vdude = 8'd100;
+
+        inc = 1'b1;
+        xdude = 4'd4;
+    end
 
     always @(posedge clk) begin
         // 0. resetting
@@ -213,7 +159,9 @@ module datapath(
             vwall[119] = nextwall;
 
             // 3. drawing
-            
+            h_counter_w = 7'd20;
+            h_counter_d = 4'd0;
+        end
     end
 
 endmodule
