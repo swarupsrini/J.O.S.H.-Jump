@@ -174,9 +174,23 @@ module datapath(
     wire ydude = 4'd6;
     reg [99:0] nextwall;
     integer i;
+    reg [6:0]h_counter_w = 7'd120; // 20 - 120 when start, change to 20
+    reg [6:0]v_counter_w = 7'b0001010; // 10
+    reg [3:0]h_counter_d = 4'd4; // 0 - 4 when start change to 0
+    reg [3:0]v_counter_d = 4'b0;
 
     // modules
-    update_screen us(vwall, hwall, vdude, hdude, clk, reset_n,)
+    update_screen us(vwall, hwall, vdude, hdude, h_counter_w, v_counter_w, h_counter_d, v_counter_d, clk, reset_n);
+
+    always @(posedge ingame) begin
+        vwall = {0};
+        hwall = {0};
+        hdude = 7'd20;
+        vdude = 8'd100;
+
+        inc = 1'b1;
+        xdude = 4'd4;
+    end
 
     always @(posedge clk) begin
         // 0. resetting
@@ -213,7 +227,9 @@ module datapath(
             vwall[119] = nextwall;
 
             // 3. drawing
-            
+            h_counter_w = 7'd20;
+            h_counter_d = 4'd0;
+        end
     end
 
 endmodule
