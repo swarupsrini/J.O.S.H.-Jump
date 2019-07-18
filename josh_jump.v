@@ -121,6 +121,7 @@ module datapath(
     // modules
     update_screen us(vwall1, hwall, vdude, hdude, h_counter_w, v_counter_w, h_counter_d, v_counter_d, clk, reset_n);
 
+    // whenever game starts
     always @(posedge ingame) begin
         for (i=0; i<100; i=i+1) begin
             for (j=0; j<120; j=j+1) begin
@@ -134,13 +135,18 @@ module datapath(
         inc = 1'b1;
         xdude = 4'd4;
     end
+    
+    // whenever game ends display screen
+    always @(negedge ingame) begin
+        
+    end
 
     always @(posedge clk) begin
         // 0. resetting
         if (!reset_n) begin
             endgame = 1'b1;
         end
-        else begin
+        else if (ingame) begin
             // 1. collision check
             // a. vertical
             if (!grav)  // grav down
