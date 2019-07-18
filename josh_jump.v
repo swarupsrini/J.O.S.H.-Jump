@@ -6,6 +6,10 @@
 //LEDR displays result
 //HEX0 & HEX1 also displays result
 
+module JOSH_Jump();
+    
+endmodule
+
 module JOSH_Jump(SW, KEY, CLOCK_50, LEDR, HEX0, HEX1);
     input [9:0] SW;
     input [3:0] KEY;
@@ -138,7 +142,7 @@ module datapath(
     
     // whenever game ends display screen
     always @(negedge ingame) begin
-        
+
     end
 
     always @(posedge clk) begin
