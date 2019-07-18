@@ -238,10 +238,10 @@ module update_screen(vwall, hwall, vdude, hdude, h_counter_w, v_counter_w, h_cou
 
     wire [2:0] colour1, colour2;
 
-    input reg [6:0]h_counter_w = 7'b0010100; // 20
-    input reg [6:0]v_counter_w = 7'b0001010; // 10
-    input reg [3:0]h_counter_d = 4'b0; 
-    input reg [3:0]v_counter_d = 4'b0; 
+    input [6:0]h_counter_w = 7'b0010100; // 20
+    input [6:0]v_counter_w = 7'b0001010; // 10
+    input [3:0]h_counter_d = 4'b0; 
+    input [3:0]v_counter_d = 4'b0; 
     
     // WALLS
     always @(posedge clk)
