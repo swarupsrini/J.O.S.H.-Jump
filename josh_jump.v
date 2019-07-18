@@ -189,7 +189,7 @@ module datapath(
 endmodule
 
 module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h_counter_d_i, v_counter_d_i, clk, reset_n);
-    input [99:0] vwall [119:0]; // maybe too much? 
+    input [11999:0] vwall; // maybe too much? 
     input [119:0] hwall;
     input [6:0] hdude; // group of 4 1s 
     input [7:0] vdude; // 4 pixels wide
@@ -200,7 +200,7 @@ module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h
     input clk;
     input reset_n;
 
-    wire VGA_CLK,   					//	VGA Clock
+    localparam VGA_CLK,   					//	VGA Clock
 	    VGA_HS,							//	VGA H_SYNC
         VGA_VS,							//	VGA V_SYNC
 		VGA_BLANK_N,					//	VGA BLANK
@@ -231,7 +231,7 @@ module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h
                 begin 
                     if (v_counter_w < 7'd100)
                         begin
-                            colourFinal = (vwall[h_counter_w][v_counter_w] == 1'b1 ? 3'b111 : 3'b000);
+                            colourFinal = (vwall[120*h_counter_w + v_counter_w] == 1'b1 ? 3'b111 : 3'b000);
 
                              v_counter_w = v_counter_w + 1;
                              v_final = v_counter_w;
