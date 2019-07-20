@@ -73,21 +73,14 @@ Week 1:
     Had trouble figuring out mechanics and subsequent implementation in Verilog of our first game choice, a Mario-based platformer, and we switched to a Gravity Guy-based platformer
     Worked out basic artwork for game sprites
 
-
-[This is an example of a report where things didn't go so well.]
-Week 1:
-	We added and tested the sensors and the main FSM.
-	The distance sensor we had intended to use didn't work as expected (wasn't precise enough at further distances, only seems to work accurately within 5-10cm), so instead we've decided to change the project to use a light sensor instead.
-	Had trouble getting the FSM to work (kept getting stuck in state 101, took longer to debug than expected), so we may not be able to add the high score feature. We have updated that in the project description as an optional feature.
-
 Week 2:
--Completed large section of Datapath
--Completed large section of Control
--Completed collision physics and character movement
--Completed large section of the screen updating module, currently debugging
--Completed basic animations for character, and any sprites we are going to use
--Working on utilizing RAM and .mif files to load various maps onto the screen.
--Working on creating an efficent way to update the screen
+    Completed large section of Datapath
+    Completed large section of Control
+    Completed collision physics and character movement
+    Completed large section of the screen updating module, currently debugging
+    Completed basic animations for character, and any sprites we are going to use
+    Working on utilizing RAM and .mif files to load various maps onto the screen.
+    Working on creating an efficent way to update the screen
 
 
 
