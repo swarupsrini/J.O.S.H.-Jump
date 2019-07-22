@@ -125,6 +125,12 @@ module datapath(
     reg [3:0] h_counter_d = 4'd4; // 0 - 4 when start change to 0
     reg [3:0] v_counter_d = 4'b0;
 
+    wire o;
+    reg o1;
+    always @(*) begin
+        o1 = o;
+    end
+
     // modules
     update_screen us(vwall1, hwall, vdude, hdude, h_counter_w, v_counter_w, h_counter_d, v_counter_d, clk, resetn, VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
 
@@ -186,6 +192,7 @@ module datapath(
             end
             h_counter_w = 7'd20;
             h_counter_d = 4'd0;
+            wait (o1 == 1'b1);
         end
     end
 
