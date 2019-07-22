@@ -129,7 +129,6 @@ module datapath(
     update_screen us(vwall1, hwall, vdude, hdude, h_counter_w, v_counter_w, h_counter_d, v_counter_d, clk, resetn, VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
 
     always @(posedge clk) begin
-
         // 0. resetting
         if (!resetn) begin
             endgame = 1'b1;
@@ -235,7 +234,7 @@ module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h
                 begin 
                     if (v_counter_w < 7'd100)
                         begin
-                            colourFinal = (vwall[120*h_counter_w + v_counter_w] == 1'b1 ? 3'b111 : 3'b000);
+                            colourFinal = (vwall[7'd120*h_counter_w + v_counter_w] == 1'b1 ? 3'b111 : 3'b000);
 
                              v_counter_w = v_counter_w + 1;
                              v_final = v_counter_w;
