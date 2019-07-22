@@ -281,6 +281,10 @@ module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h
                              .VGA_BLANK(VGA_BLANK_N),
                              .VGA_SYNC(VGA_SYNC_N),
                              .VGA_CLK(VGA_CLK));
+        defparam VGA.RESOLUTION = "160x120";
+        defparam VGA.MONOCHROME = "FALSE";
+        defparam VGA.BITS_PER_COLOUR_CHANNEL = 1;
+        // defparam VGA.BACKGROND_IMAGE = "black.mif";
 
         // vga_adapter VGA2(
         //                      .resetn(resetn),
