@@ -121,7 +121,7 @@ module datapath(
     reg [3:0] ydude = 4'd6;
     reg [99:0] nextwall;
     reg [6:0]h_counter_w = 7'd120; // 20 - 120 when start, change to 20
-    reg [6:0]v_counter_w = 7'b0001010; // 10
+    reg [6:0]v_counter_w = 7'd10; // 10
     reg [3:0]h_counter_d = 4'd4; // 0 - 4 when start change to 0
     reg [3:0]v_counter_d = 4'b0;
 
@@ -129,6 +129,7 @@ module datapath(
     update_screen us(vwall1, hwall, vdude, hdude, h_counter_w, v_counter_w, h_counter_d, v_counter_d, clk, resetn, VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
 
     always @(posedge clk) begin
+
         // 0. resetting
         if (!resetn) begin
             endgame = 1'b1;
