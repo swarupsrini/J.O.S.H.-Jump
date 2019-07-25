@@ -23,49 +23,88 @@ module joshtest(
     wire ingame;
     wire go;
 	 wire [3:0] curr;
+	 
+	 wire [7:0] x,y;
+	 
+	 wire [3:0]colour;
 
     wire endgame;
 
     assign resetn = KEY[0];
     assign grav = SW[0];
     assign go = SW[1];
-	 assign LEDR[3:0] = curr;
+	 
+	 assign LEDR[3:0] = curr; // debugging
+	 
+	 vga_adapter VGA(
+                             .resetn(resetn),
+                             .clock(CLOCK_50),
+                             .colour(colour),
+                             .x(x),
+                             .y(y),
+                             .plot(1'b1),
+                             /* Signals for the DAC to drive the monitor. */
+                             .VGA_R(VGA_R),
+                             .VGA_G(VGA_G),
+                             .VGA_B(VGA_B),
+                             .VGA_HS(VGA_HS),
+                             .VGA_VS(VGA_VS),
+                             .VGA_BLANK(VGA_BLANK_N),
+                             .VGA_SYNC(VGA_SYNC_N),
+                             .VGA_CLK(VGA_CLK));
+        defparam VGA.RESOLUTION = "160x120";
+        defparam VGA.MONOCHROME = "FALSE";
+        defparam VGA.BITS_PER_COLOUR_CHANNEL = 1;
     
-    control c0 (CLOCK_50, resetn, grav, go, endgame, curr, ingame);
-    datapath d0 (CLOCK_50, resetn, ingame, grav, endgame, VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
+    control c0 (CLOCK_50, resetn, grav, go, endgame, ingame, curr);
+    datapath d0 (CLOCK_50, resetn, ingame, grav, endgame, x, y, colour);
 
 endmodule 
                 
 
 module control(
-    input clk,
-    input resetn,
-    // user input
-    input grav,
-    input go,
-    // signals from datapath
-    input endgame,
-    
-    // signals to datapath
-	 output [3:0] curr,
-    output reg ingame // 0 for menu, 1 for game
+		 // inputs from top-level
+		 input clk,
+		 input resetn,
+		 input grav,
+		 input go,
+		 
+		 // inputs from datapath
+		 input endgame,
+		 input disout,
+		 
+		 // signals to datapath
+		 output reg menu,
+		 output reg physics,
+		 output reg setup,
+		 output reg display,
+		 
+		 // debugging output
+		 output [3:0] curr
     );
+//            vdude = 8'd100;
 
     reg [5:0] current_state, next_state;
 	 
-	 assign curr = current_state;
+	 assign curr = current_state; // debugging output
     
-    localparam  S_MENU        = 2'd0,
-                S_MENU_WAIT   = 2'd1,
-                S_GAME        = 2'd2;
+    localparam  S_MENU        = 0,
+                S_PHYSICS     = 1,
+                S_SETUP       = 2,
+					 S_DISPLAY     = 3;
     
     // state table
-    always@(*)
+    always@(posedge clk)
     begin: state_table 
             case (current_state)
-                S_MENU: next_state = go ? S_MENU_WAIT : S_MENU;
-                S_MENU_WAIT: next_state = S_GAME;
-                S_GAME: next_state = endgame ? S_MENU : S_GAME;
+                S_MENU: next_state = (go && resetn) ? S_PHYSICS : S_MENU; // if we go and not reset, then we move on
+					 S_PHYSICS: next_state = !resetn ? S_MENU : S_SETUP;			// if we reset, go to menu or move on
+					 S_SETUP: next_state = !resetn ? S_MENU : S_DISPLAY;			// same as above
+                S_DISPLAY: begin
+						if (!resetn) next_state = S_MENU;
+						else if (disout) next_state = S_PHYSICS;
+						else next_state = S_DISPLAY;
+					 end
             default: next_state = S_MENU;
         endcase
     end
@@ -74,16 +113,23 @@ module control(
     // Output logic aka all datapath control signals
     always @(*)
     begin: enable_signals
-        // By default make all our signals 0
-            ingame = 1'b0;
+				menu = 0;
+            physics = 0;
+				setup = 0;
+				display = 0;
         case (current_state)
-            //S_MENU: begin
-            //    startgame = 1'b0;
-            //end
-            S_GAME: begin
-                ingame = 1'b1;
+            S_MENU: begin
+                menu = 1;
             end
-            
+				S_PHYSICS: begin
+					physics = 1;
+				end
+				S_SETUP: begin
+					setup = 1;
+				end
+				S_DISPLAY: begin
+					display = 1;
+				end
         // default:  // don't need default since we already made sure all of our outputs were assigned a value at the start of the always block
         endcase
     end // enable_signals
@@ -99,322 +145,216 @@ module control(
 endmodule
 
 module datapath(
-    input clk,
-    input resetn,
-    input ingame,
-    input grav, // should be connected to a switch input
-    output reg endgame,
-
-    output VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N,
-    output [9:0] VGA_R, VGA_G, VGA_B
+		 // inputs from top-level
+		 input clk,
+		 input resetn,
+		 input grav, // should be connected to a switch input
+		 
+		 // inputs from control
+		 input menu,
+		 input physics,
+		 input setup
+		 input display,
+		 
+		 // output to control
+		 output reg endgame,
+		 output reg disout,
+		 
+		 // output to VGA
+		 output [7:0] x,y,
+		 output [3:0] colour
     );
-
-    // ints
-    integer i;
-    integer j;
-
-    // registers/wires
-    reg [99:0] vwall [119:0]; 
-    reg [11999:0] vwall1;
-    reg [119:0] hwall;
-    // top left coordinates of dude
-    reg [6:0] hdude = 7'd20; // from 0 to 20
-    reg [7:0] vdude = 8'd100; // from 6 to 100
-    
-    reg [4:0] surr;
-    reg inc = 1'b1;
-    reg [3:0] xdude = 4'd4; // if we change this we need to change the collision check to be a for loop
-    reg [3:0] ydude = 4'd6;
-    reg [99:0] nextwall;
-    reg [6:0] h_counter_w = 7'd120; // 20 - 120 when start, change to 20
-    reg [6:0] v_counter_w = 7'd10; // 10
-    reg [3:0] h_counter_d = 4'd4; // 0 - 4 when start change to 0
-    reg [3:0] v_counter_d = 4'b0;
-
-    wire o;
-    reg o1;
-    always @(*) begin
-        o1 = o;
-    end
-
-    // modules
-    update_screen us(vwall1, hwall, vdude, hdude, h_counter_w, v_counter_w, h_counter_d, v_counter_d, clk, resetn, VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
-
-    always @(posedge clk) begin
-        // 0. resetting
-        if (!resetn) begin
-            endgame = 1'b1;
-        end
-        else if (!ingame) begin
-            endgame = 1'b0;
-            for (i=0; i<120; i=i+1) begin
-            for (j=0; j<100; j=j+1) begin
+	 
+	 // regs
+	 reg [11999:0] vwall;
+	 reg [119:0] hwall;
+	 reg [7:0] hdude = 7'd125; // from 0 to 20
+	 reg [7:0] vdude = 8'd104; // from 6 to 100
+	 
+	 always @(posedge menu) begin
+		for (i=0; i<120; i=i+1) begin
+         for (j=0; j<100; j=j+1) begin
                 vwall[i][j] = 1'b0;
-            end
-            end
-            for (i=0; i<120; i=i+1) begin
-                hwall[i] = 1'b0;
-            end
-            hdude = 7'd20;
-            vdude = 8'd100;
+         end
+      end
+      for (i=0; i<120; i=i+1) begin
+         hwall[i] = 1'b0;
+      end
+      hdude = 7'd20;
+      vdude = 8'd100;
 
-            inc = 1'b1;
-            xdude = 4'd4;
-        end
-        else if (ingame) begin
-            // 1. collision check
-            // a. vertical
-            if (!grav)  // grav down
-                surr = {vwall[hdude][vdude-1'b1], vwall[hdude+1'b1][vdude-1'b1], vwall[hdude+2'd2][vdude-1'b1], vwall[hdude+2'd3][vdude-1'b1]};
-            else        // grav up
-                surr = {vwall[hdude][vdude+ydude+1'b1], vwall[hdude+1'b1][vdude+ydude+1'b1], vwall[hdude+2'd2][vdude+ydude+1'b1], vwall[hdude+2'd3][vdude+ydude+1'b1]};
-            
-            // b. horizontal
-            if (hwall[1'b1]) begin
-                if (~|{vwall[hdude+xdude+1'b1][vdude], vwall[hdude+xdude+1'b1][vdude+1'b1], vwall[hdude+xdude+1'b1][vdude+2'd2], vwall[hdude+xdude+1'b1][vdude+2'd3], vwall[hdude+xdude+1'b1][vdude+3'd4], vwall[hdude+xdude+1'b1][vdude+3'd5]}) begin
-                    hdude = hdude-1'b1;
-                    if (hdude <= 1'b0)
-                        endgame = 1'b1;
-                end
-            end
-
-            // 2. shifting
-            // TODO: use RAM to get next walls from the map
-            nextwall = 100'b1111111111111111111100000000000000000000000000000000000000000000000000000000000011111111111111111111;
-            if (|nextwall == 0) begin
-                endgame = 1'b1;
-            end
-            for (i=0; i<119; i=i+1) begin
-                vwall[i] = vwall[i+1];
-                hwall[i] = hwall[i+1];
-            end
-            vwall[119] = nextwall;
-
-            // 3. drawing
-            for (i=0; i<120; i=i+1) begin
-                for (j=0; j<100; j=j+1) begin
-                    vwall1[i*j] = vwall[i][j];
-                end
-            end
-            h_counter_w = 20;
-            h_counter_d = 0;
-            wait (o1 == 1'b1);
-        end
-    end
+      inc = 1'b1;
+      xdude = 4'd4;
+	 end
+	 
+	 
+//    // ints
+//    integer i;
+//    integer j;
+//
+//    // registers/wires
+//    reg [99:0] vwall [119:0]; 
+//    reg [11999:0] vwall1;
+//    reg [119:0] hwall;
+//    // top left coordinates of dude
+//    reg [7:0] hdude = 7'd125; // from 0 to 20
+//    reg [7:0] vdude = 8'd104; // from 6 to 100
+//    
+//    reg [4:0] surr;
+//    reg inc = 1'b1;
+//    reg [3:0] xdude = 4'd4; // if we change this we need to change the collision check to be a for loop
+//    reg [3:0] ydude = 4'd6;
+//    reg [99:0] nextwall;
+//
+//    wire o;
+//    reg o1;
+//    always @(*) begin
+//        o1 = o;
+//    end
+//
+//	 reg enable = 0;
+//	 
+//    // modules
+//    update_screen us(enable, vwall1, vdude, hdude, clk, resetn, x,y,colour,o);
+//
+//    always @(posedge clk) begin
+//        // 0. resetting
+//        if (!resetn) begin
+//            endgame = 1'b1;
+//        end
+////        else if (!ingame) begin
+////            endgame = 1'b0;
+////            for (i=0; i<120; i=i+1) begin
+////            for (j=0; j<100; j=j+1) begin
+////                vwall[i][j] = 1'b0;
+////            end
+////            end
+////            for (i=0; i<120; i=i+1) begin
+////                hwall[i] = 1'b0;
+////            end
+//////            hdude = 7'd20;
+//////            vdude = 8'd100;
+////
+////            inc = 1'b1;
+////            xdude = 4'd4;
+////        end
+//        else if (ingame) begin
+////            // 1. collision check
+////            // a. vertical
+////            if (!grav)  // grav down
+////                surr = {vwall[hdude][vdude-1'b1], vwall[hdude+1'b1][vdude-1'b1], vwall[hdude+2'd2][vdude-1'b1], vwall[hdude+2'd3][vdude-1'b1]};
+////            else        // grav up
+////                surr = {vwall[hdude][vdude+ydude+1'b1], vwall[hdude+1'b1][vdude+ydude+1'b1], vwall[hdude+2'd2][vdude+ydude+1'b1], vwall[hdude+2'd3][vdude+ydude+1'b1]};
+////            
+////            // b. horizontal
+////            if (hwall[1'b1]) begin
+////                if (~|{vwall[hdude+xdude+1'b1][vdude], vwall[hdude+xdude+1'b1][vdude+1'b1], vwall[hdude+xdude+1'b1][vdude+2'd2], vwall[hdude+xdude+1'b1][vdude+2'd3], vwall[hdude+xdude+1'b1][vdude+3'd4], vwall[hdude+xdude+1'b1][vdude+3'd5]}) begin
+////                    hdude = hdude-1'b1;
+////                    if (hdude <= 1'b0)
+////                        endgame = 1'b1;
+////                end
+////            end
+//
+//            // 2. shifting
+//            // TODO: use RAM to get next walls from the map
+//            nextwall = 100'b1111111111111111111100000000000000000000000000000000000000000000000000000000000011111111111111111111;
+//            if (|nextwall == 0) begin
+//                endgame = 1'b1;
+//            end
+//            for (i=0; i<119; i=i+1) begin
+//                vwall[i] = vwall[i+1];
+//                hwall[i] = hwall[i+1];
+//            end
+//            vwall[119] = nextwall;
+//
+//            // 3. drawing
+//            for (i=0; i<120; i=i+1) begin
+//                for (j=0; j<100; j=j+1) begin
+//                    vwall1[i*100 + j] = vwall[i][j];
+//                end
+//            end
+//				
+//				enable = 1;
+//				
+//            wait (o1 == 1'b1);
+//        end
+//    end
 
 endmodule
 
-module update_screen(vwall, hwall, vdude, hdude, h_counter_w_i, v_counter_w_i, h_counter_d_i, v_counter_d_i, clk, resetn, VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
+module update_screen(enable, vwall, vdude, hdude, clk, resetn, x,y,colour,o);
     input [11999:0] vwall; // maybe too much? 
-    input [119:0] hwall;
-    input [6:0] hdude; // group of 4 1s 
+    input [7:0] hdude; // group of 4 1s 
     input [7:0] vdude; // 4 pixels wide
-    input [6:0] h_counter_w_i;
-    input [6:0] v_counter_w_i;
-    input [3:0] h_counter_d_i;
-    input [3:0] v_counter_d_i;
+    input enable;
     input clk;
     input resetn;
 
-    output VGA_CLK,   					//	VGA Clock
-	    VGA_HS,							//	VGA H_SYNC
-        VGA_VS,							//	VGA V_SYNC
-		VGA_BLANK_N,					//	VGA BLANK
-		VGA_SYNC_N;                     //	VGA SYNC
-
-	output [9:0]	VGA_R,   			    //	VGA Red[9:0]
-		VGA_G,	 						//	VGA Green[9:0]
-		VGA_B;         					//	VGA Blue[9:0]
-
-    reg [2:0] colourFinal;
+	output reg [7:0] x,y;
+	output reg [3:0] colour;
+    output reg o;
 
     reg [7:0]h_counter_w = 20;
     reg [7:0]v_counter_w = 10;
-    reg [4:0]h_counter_d;
-    reg [4:0]v_counter_d;
-    reg [7:0]h_final;
-    reg [7:0]v_final;
+    reg [7:0]h_counter_d = 0;
+    reg [7:0]v_counter_d = 0;
+ 
     
     // WALLS
     always @(posedge clk)
         begin 
 				
-				if(h_counter_w == 161) begin
-            h_counter_w = h_counter_w_i;
-            v_counter_w = v_counter_w_i;
-            h_counter_d = h_counter_d_i;
-            v_counter_d = v_counter_d_i;
-				end
+//				if(setup) begin
+//            h_counter_w = 20;
+//            v_counter_w = 10;
+//            h_counter_d = 0;
+//            v_counter_d = 0;
+//				end
 				
-            if (h_counter_w < 160) // 120 
+            if (h_counter_w < 140) // 120 
                 begin 
                     if (v_counter_w < 110)
                         begin
-                            colourFinal = (vwall[100*h_counter_w + v_counter_w] == 1'b1 ? 3'b111 : 3'b000);
+                            colour = (vwall[100*(h_counter_w-20) + (v_counter_w-10)] == 1'b1 ? 3'b111 : 3'b000);
 
                              v_counter_w = v_counter_w + 1;
-                             v_final = v_counter_w;
+                             y = v_counter_w;
                         end
-                    else 
+                    else if (h_counter_w < 139)
                         begin 
                             h_counter_w = h_counter_w + 1;
                             v_counter_w = 10;
-                            h_final = h_counter_w;
+                            x = h_counter_w;
                         end
+							else if (h_counter_w == 139)begin
+									h_counter_w = h_counter_w + 1;
+									x = h_counter_d + hdude;
+									y = v_counter_d + vdude + 1;
+									colour = 3'b100;
+							end
                 end
 
                 else if (h_counter_d < 4) 
                 begin 
                     if (v_counter_d < 6)
                         begin
-                            colourFinal = 3'b100;
+                            colour = 3'b100;
 
                             v_counter_d = v_counter_d + 1;
-                            v_final = v_counter_d + vdude;
+                            y = v_counter_d + vdude;
                         end
-                    else 
+                    else if(h_counter_d < 3)
                         begin 
                             h_counter_d = h_counter_d + 1;
                             v_counter_d = 4'd0;
-                            h_final = h_counter_d + hdude;
+                            x = h_counter_d + hdude;
                         end
                 end
+					 
+					 else if (h_counter_w == 160 && h_counter_d == 5) begin
+					     
+					 end
         end
-
-        vga_adapter VGA(
-                             .resetn(resetn),
-                             .clock(clk),
-                             .colour(colourFinal),
-                             .x(h_final),
-                             .y(v_final),
-                             .plot(1'b1),
-                             /* Signals for the DAC to drive the monitor. */
-                             .VGA_R(VGA_R),
-                             .VGA_G(VGA_G),
-                             .VGA_B(VGA_B),
-                             .VGA_HS(VGA_HS),
-                             .VGA_VS(VGA_VS),
-                             .VGA_BLANK(VGA_BLANK_N),
-                             .VGA_SYNC(VGA_SYNC_N),
-                             .VGA_CLK(VGA_CLK));
-        defparam VGA.RESOLUTION = "160x120";
-        defparam VGA.MONOCHROME = "FALSE";
-        defparam VGA.BITS_PER_COLOUR_CHANNEL = 1;
-        // defparam VGA.BACKGROND_IMAGE = "black.mif";
-
-        // vga_adapter VGA2(
-        //                      .resetn(resetn),
-        //                      .clock(clk),
-        //                      .colour(colour2),
-        //                      .x(hdude + h_counter_d),
-        //                      .y(vdude + v_counter_d),
-        //                      .plot(1'b1),
-        //                      /* Signals for the DAC to drive the monitor. */
-        //                      .VGA_R(VGA_R),
-        //                      .VGA_G(VGA_G),
-        //                      .VGA_B(VGA_B),
-        //                      .VGA_HS(VGA_HS),
-        //                      .VGA_VS(VGA_VS),
-        //                      .VGA_BLANK(VGA_BLANK_N),
-        //                      .VGA_SYNC(VGA_SYNC_N),
-        //                      .VGA_CLK(VGA_CLK));
-        
-
-        // // DUDE
-        // always @(posedge clk)
-        // begin 
-        //     if (h_counter_d < 4'd4) 
-        //         begin 
-        //             if (v_counter_d < 4'd6)
-        //                 begin
-        //                     assign colour = 3'b100;
-
-        //                     vga_adapter VGA(
-        //                      .resetn(resetn),
-        //                      .clock(clk),
-        //                      .colour(colour),
-        //                      .x(hdude + h_counter_d),
-        //                      .y(vdude + v_counter_d),
-        //                      .plot(1'b1),
-        //                      /* Signals for the DAC to drive the monitor. */
-        //                      .VGA_R(VGA_R),
-        //                      .VGA_G(VGA_G),
-        //                      .VGA_B(VGA_B),
-        //                      .VGA_HS(VGA_HS),
-        //                      .VGA_VS(VGA_VS),
-        //                      .VGA_BLANK(VGA_BLANK_N),
-        //                      .VGA_SYNC(VGA_SYNC_N),
-        //                      .VGA_CLK(VGA_CLK));
-
-        //                      v_counter_d = v_counter_d + 1;
-        //                 end
-        //             else 
-        //                 begin 
-        //                     h_counter_d = h_counter_d + 1;
-        //                     v_counter_d = 4'd0;
-        //                 end
-        //         end
-        // end
-
-    // integer i,j;
- 
-    // // wall update
-    // initial begin : lol
-    //     for (i=0; i < 120; i = i + 1)
-    //         begin : hello
-    //             if (hwall[i] == 1'b1)
-    //             begin : klalala
-    //                 for (j=0; j < 100; j = j + 1)
-    //                     begin : wall_update
-    //                         assign colour = (vwall[i][j] == 1'b1 ? 3'b111 : 3'b000);
-
-    //                         vga_adapter VGA(
-    //                         .resetn(resetn),
-    //                         .clock(clk),
-    //                         .colour(colour),
-    //                         .x(7'd20 + i),
-    //                         .y(6'd10 + j),
-    //                         .plot(1'b1),
-    //                         /* Signals for the DAC to drive the monitor. */
-    //                         .VGA_R(VGA_R),
-    //                         .VGA_G(VGA_G),
-    //                         .VGA_B(VGA_B),
-    //                         .VGA_HS(VGA_HS),
-    //                         .VGA_VS(VGA_VS),
-    //                         .VGA_BLANK(VGA_BLANK_N),
-    //                         .VGA_SYNC(VGA_SYNC_N),
-    //                         .VGA_CLK(VGA_CLK));
-    //                     end
-    //             end 
-    //         end
-    // end
-
-    // // dude update
-    // initial begin 
-    //     for (i=0; i < 4; i = i + 1)
-    //         begin
-    //                 for (j=0); j < 6; j = j + 1)
-    //                     assign colour = 3'b100;
-    //                     begin : dude_update
-    //                         vga_adapter VGA(
-    //                         .resetn(resetn),
-    //                         .clock(clk),
-    //                         .colour(colour),
-    //                         .x(7'd20 + hdude + i),
-    //                         .y(6'd10 + vdude + j),
-    //                         .plot(1'b1),
-    //                         /* Signals for the DAC to drive the monitor. */
-    //                         .VGA_R(VGA_R),
-    //                         .VGA_G(VGA_G),
-    //                         .VGA_B(VGA_B),
-    //                         .VGA_HS(VGA_HS),
-    //                         .VGA_VS(VGA_VS),
-    //                         .VGA_BLANK(VGA_BLANK_N),
-    //                         .VGA_SYNC(VGA_SYNC_N),
-    //                         .VGA_CLK(VGA_CLK));
-    //                     end
-    //         end
-    // end 
 
 endmodule
 
