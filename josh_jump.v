@@ -6,7 +6,7 @@
 //LEDR displays result
 //HEX0 & HEX1 also displays result
 
-module JOSH_Jump(
+module JOSH(
     input [9:0] SW,
     input [3:0] KEY,
     input CLOCK_50,
@@ -44,7 +44,7 @@ module control(
     input endgame,
     
     // signals to datapath
-    output reg ingame, // 0 for menu, 1 for game
+    output reg ingame // 0 for menu, 1 for game
     );
 
     reg [5:0] current_state, next_state;
