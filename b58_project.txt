@@ -82,6 +82,12 @@ Week 2:
     Working on utilizing RAM and .mif files to load various maps onto the screen.
     Working on creating an efficent way to update the screen
 
+Week 3:
+    Worked on various issues with the FSM, completely redid a diagram for the states however we found an issue where the code would not compile
+    Redid the update_Screen module and we were able to output a single frame, however due to issues with the states and collision we were unable to create movement on the screen
+    redid the datapath and collison to reform our 2d arrays into a singular, column major array
+    we fixed the organization of the modules to only instantiate modules in the top level
+    we fixed the wiring of the variables to only instantiate variables in the top level
 
 
 References
