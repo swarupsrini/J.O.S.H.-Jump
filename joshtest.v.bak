@@ -7,7 +7,7 @@
 //LEDR displays result
 //HEX0 & HEX1 also displays result
 
-module JOSH(
+module joshtest(
     input [9:0] SW,
     input [3:0] KEY,
     input CLOCK_50,
@@ -22,6 +22,7 @@ module JOSH(
     wire grav;
     wire ingame;
     wire go;
+	 wire [3:0] curr;
 	 
 	 wire [7:0] x,y;
 	 
@@ -33,13 +34,7 @@ module JOSH(
     assign grav = SW[0];
     assign go = SW[1];
 	 
-	 wire [5:0] curr;
-	 wire [11999:0] vwall;
-	 wire [119:0] hwall;
-	 wire [7:0] vdude, hdude;
-	 wire enable, o, menu, physics, setup, display;
-	 
-	 //assign LEDR[3:0] = curr; // debugging
+	 assign LEDR[3:0] = curr; // debugging
 	 
 	 vga_adapter VGA(
                              .resetn(resetn),
@@ -61,12 +56,9 @@ module JOSH(
         defparam VGA.MONOCHROME = "FALSE";
         defparam VGA.BITS_PER_COLOUR_CHANNEL = 1;
     
-    control c0 (CLOCK_50, resetn, grav, go, o, endgame, menu, physics, setup, display, curr);
-    datapath d0 (CLOCK_50, resetn, grav, menu, physics, setup, display, curr, endgame, vwall, hwall, vdude, hdude, enable);
-	 update_screen u0 (enable, vwall, vdude, hdude, CLOCK_50, resetn, setup, display, x,y,colour,o);
-	 hex_decoder h0(curr, HEX0);
-	 
-	 
+    control c0 (CLOCK_50, resetn, grav, go, endgame, ingame, curr);
+    datapath d0 (CLOCK_50, resetn, ingame, grav, endgame, x, y, colour);
+
 endmodule 
                 
 
@@ -78,53 +70,42 @@ module control(
 		 input go,
 		 
 		 // inputs from datapath
-		 input o,
 		 input endgame,
+		 input disout,
 		 
 		 // signals to datapath
 		 output reg menu,
 		 output reg physics,
 		 output reg setup,
-		 output reg display, 
-		  
+		 output reg display,
+		 
 		 // debugging output
-		 output [5:0] curr
-		 //output [6:0] HEX1
+		 output [3:0] curr
     );
+//            vdude = 8'd100;
 
     reg [5:0] current_state, next_state;
 	 
-	 //hex_decoder h1(2, HEX1);
-	 
 	 assign curr = current_state; // debugging output
     
-    localparam  S_MENU        	= 0,
-					 S_MENU_WAIT 		= 1,
-                S_PHYSICS     	= 2,
-					 S_PHYSICS_WAIT	= 3,
-                S_SETUP       	= 4,
-					 S_SETUP_WAIT 		= 5,
-					 S_DISPLAY     	= 6,
-					 S_DISPLAY_WAIT   = 7;
+    localparam  S_MENU        = 0,
+                S_PHYSICS     = 1,
+                S_SETUP       = 2,
+					 S_DISPLAY     = 3;
     
     // state table
-    always@(*)
+    always@(posedge clk)
     begin: state_table 
             case (current_state)
-					 //S_MENU: next_state = (go && resetn) ? S_PHYSICS_WAIT : S_MENU;
-					 //S_PHYSICS: next_state = (!resetn || endgame) ? S_MENU_WAIT : S_SETUP_WAIT;
-					 //S_SETUP: next_state = !resetn ? S_MENU_WAIT : S_DISPLAY_WAIT;
-                //S_DISPLAY: begin
-						//if (!resetn) next_state = S_MENU_WAIT;
-						//else if (o) next_state = S_PHYSICS_WAIT;
-						//else next_state = S_DISPLAY_WAIT;
-					 //end
-					 //waits
-					 S_MENU_WAIT: next_state = S_MENU;
-					 //S_PHYSICS_WAIT: next_state = S_PHYSICS;
-					 //S_SETUP_WAIT: next_state = S_SETUP;
-					 //S_DISPLAY_WAIT: next_state = S_DISPLAY;
-            default: next_state = S_MENU_WAIT;
+                S_MENU: next_state = (go && resetn) ? S_PHYSICS : S_MENU; // if we go and not reset, then we move on
+					 S_PHYSICS: next_state = !resetn ? S_MENU : S_SETUP;			// if we reset, go to menu or move on
+					 S_SETUP: next_state = !resetn ? S_MENU : S_DISPLAY;			// same as above
+                S_DISPLAY: begin
+						if (!resetn) next_state = S_MENU;
+						else if (disout) next_state = S_PHYSICS;
+						else next_state = S_DISPLAY;
+					 end
+            default: next_state = S_MENU;
         endcase
     end
    
@@ -149,9 +130,7 @@ module control(
 				S_DISPLAY: begin
 					display = 1;
 				end
-           default: begin
-			  end
-			  // don't need default since we already made sure all of our outputs were assigned a value at the start of the always block
+        // default:  // don't need default since we already made sure all of our outputs were assigned a value at the start of the always block
         endcase
     end // enable_signals
    
@@ -159,9 +138,9 @@ module control(
     always@(posedge clk)
     begin: state_FFs
         if(!resetn)
-            current_state = S_MENU;
+            current_state <= S_MENU;
         else
-            current_state = next_state;
+            current_state <= next_state;
     end // state_FFS
 endmodule
 
@@ -174,111 +153,39 @@ module datapath(
 		 // inputs from control
 		 input menu,
 		 input physics,
-		 input setup,
+		 input setup
 		 input display,
-		 input [5:0] curr,
 		 
 		 // output to control
 		 output reg endgame,
+		 output reg disout,
 		 
 		 // output to VGA
-		 output reg [11999:0] vwall,
-		 output reg [119:0] hwall,
-		 output reg [7:0] vdude, 
-		 output reg [7:0] hdude,
-		 output reg enable
+		 output [7:0] x,y,
+		 output [3:0] colour
     );
 	 
-	 integer i;
-    integer j;
-
-    // top left coordinates of dude
-    reg [4:0] surr;
-    reg [3:0] xdude = 4; // if we change this we need to change the collision check to be a for loop
-    reg [3:0] ydude = 6;
-    reg [99:0] nextwall;
-    reg [99:0] nextwall1;
-	 reg which=0; 
+	 // regs
+	 reg [11999:0] vwall;
+	 reg [119:0] hwall;
+	 reg [7:0] hdude = 7'd125; // from 0 to 20
+	 reg [7:0] vdude = 8'd104; // from 6 to 100
 	 
-	 always@(posedge clk) begin
-		case (curr) 
-			0: begin // MENU
-				for (i=0; i<4000; i=i+1) begin // change vwall to be the menu screen
-					vwall[i] = 0;
-				end
-				for (i=4000; i<8000; i=i+1) begin // change vwall to be the menu screen
-					vwall[i] = 0;
-				end
-				for (i=8000; i<12000; i=i+1) begin // change vwall to be the menu screen
-					vwall[i] = 0;
-				end
-				for (i=0; i<120; i=i+1) begin	
-					hwall[i] = 1;
-				end
-				hdude <= 30;
-				vdude <= 94;
-				enable <= 1;
-			end
+	 always @(posedge menu) begin
+		for (i=0; i<120; i=i+1) begin
+         for (j=0; j<100; j=j+1) begin
+                vwall[i][j] = 1'b0;
+         end
+      end
+      for (i=0; i<120; i=i+1) begin
+         hwall[i] = 1'b0;
+      end
+      hdude = 7'd20;
+      vdude = 8'd100;
 
-			2: begin // PHYSICS
-				// 1. collision check
-            // a. vertical
-            if (!grav)  // grav down
-                surr = {vwall[100*hdude + vdude-1], vwall[100*(hdude+1) + vdude-1], vwall[100*(hdude+2) + vdude-1], vwall[100*(hdude+3) + vdude-1]};
-            else        // grav up
-                surr = {vwall[100*hdude + vdude+ydude+1], vwall[100*(hdude+1) + vdude+ydude+1], vwall[100*(hdude+2) + vdude+ydude+1], vwall[100*(hdude+3) + vdude+ydude+1]};
-            if (|surr) begin
-					if (grav) vdude = vdude - 1;
-					else vdude = vdude + 1;
- 				end
-				
-            // b. horizontal
-            if (hwall[hdude+1]) begin
-					 // if (|vwall[(100*(hdude+xdude+1) + vdude) : (100*(hdude+xdude+1) + vdude+5)]) begin
-						  if (|{vwall[100*(hdude+xdude+1) + vdude], vwall[(100*(hdude+xdude+1) + vdude+1)], vwall[(100*(hdude+xdude+1) + vdude+2)], vwall[(100*(hdude+xdude+1) + vdude+3)], vwall[(100*(hdude+xdude+1) + vdude+4)], vwall[(100*(hdude+xdude+1) + vdude+5)]}) begin
-                    hdude = hdude-1;
-                    if (hdude <= 0) endgame = 1;
-                end
-            end
-
-            // 2. shifting
-            // TODO: use RAM to get next walls from the map
-            nextwall = 100'b0000000000000000000000000000000000000000000000000000000000000000000000000000000011111111111111111111;
-            nextwall1 = 100'b1111111111111111111100000000000000000000000000000000000000000000000000000000000011111111111111111111;
-            //if (|nextwall == 0) begin
-            //    endgame = 1'b1;
-            //end
-            for (i=0; i<119; i=i+1) begin
-					for (j=0; j<100; j=j+1) begin
-						 vwall[i*100 + j] = vwall[(i+1)*100 + j];
-						 hwall[i] = hwall[i+1];
-					end
-				end
-				for (j=0; j<100; j=j+1) begin
-                if (which) vwall[119*100 + j] = nextwall[j];
-					 else vwall[119*100 + j] = nextwall1[j];
-            end
-				which = !which;
-			end
-		endcase
-	end
-
-//	 always @(posedge menu) begin // going to menu
-//		for (i=0; i<12000; i=i+1) begin // change vwall to be the menu screen
-//			vwall[i] = 0;
-//		end
-//      for (i=0; i<120; i=i+1) begin	
-//         hwall[i] = 1;
-//      end
-//      hdude <= 30;
-//      vdude <= 94;
-//		enable <= 1;
-//	 end
-//	 
-//	 always @(posedge physics) begin
-//		
-//	 end
-	 
+      inc = 1'b1;
+      xdude = 4'd4;
+	 end
 	 
 	 
 //    // ints
@@ -375,18 +282,16 @@ module datapath(
 
 endmodule
 
-module update_screen(enable, vwall, vdude, hdude, clk, resetn, setup, display, x,y,colour,o);
+module update_screen(enable, vwall, vdude, hdude, clk, resetn, x,y,colour,o);
     input [11999:0] vwall; // maybe too much? 
     input [7:0] hdude; // group of 4 1s 
     input [7:0] vdude; // 4 pixels wide
     input enable;
     input clk;
     input resetn;
-	 input setup;
-	 input display;
 
-	 output reg [7:0] x,y;
-	 output reg [3:0] colour;
+	output reg [7:0] x,y;
+	output reg [3:0] colour;
     output reg o;
 
     reg [7:0]h_counter_w = 20;
@@ -399,15 +304,14 @@ module update_screen(enable, vwall, vdude, hdude, clk, resetn, setup, display, x
     always @(posedge clk)
         begin 
 				
-				if(setup) begin
-            h_counter_w = 20;
-            v_counter_w = 10;
-            h_counter_d = 0;
-            v_counter_d = 0;
-				o = 0;
-				end
+//				if(setup) begin
+//            h_counter_w = 20;
+//            v_counter_w = 10;
+//            h_counter_d = 0;
+//            v_counter_d = 0;
+//				end
 				
-            if (h_counter_w < 140 && display) // 120 
+            if (h_counter_w < 140) // 120 
                 begin 
                     if (v_counter_w < 110)
                         begin
@@ -424,31 +328,31 @@ module update_screen(enable, vwall, vdude, hdude, clk, resetn, setup, display, x
                         end
 							else if (h_counter_w == 139)begin
 									h_counter_w = h_counter_w + 1;
-									x = h_counter_d + hdude + 20;
-									y = v_counter_d + vdude + 10 + 1;
+									x = h_counter_d + hdude;
+									y = v_counter_d + vdude + 1;
 									colour = 3'b100;
 							end
                 end
 
-                else if (h_counter_d < 4 && display) 
+                else if (h_counter_d < 4) 
                 begin 
                     if (v_counter_d < 6)
                         begin
                             colour = 3'b100;
 
                             v_counter_d = v_counter_d + 1;
-                            y = v_counter_d + vdude + 10;
+                            y = v_counter_d + vdude;
                         end
                     else if(h_counter_d < 3)
                         begin 
                             h_counter_d = h_counter_d + 1;
                             v_counter_d = 4'd0;
-                            x = h_counter_d + hdude + 20;
+                            x = h_counter_d + hdude;
                         end
                 end
 					 
 					 else if (h_counter_w == 160 && h_counter_d == 5) begin
-					     o = 1;
+					     
 					 end
         end
 
