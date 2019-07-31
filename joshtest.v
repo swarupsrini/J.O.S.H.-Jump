@@ -7,7 +7,7 @@
 //LEDR displays result
 //HEX0 & HEX1 also displays result
 
-module JOSH(
+module JOSH_Jump(
     input [9:0] SW,
     input [3:0] KEY,
     input CLOCK_50,
@@ -88,15 +88,15 @@ module control(
 		 output reg display, 
 		  
 		 // debugging output
-		 output [5:0] curr
+		 output reg [5:0] current_state
 		 //output [6:0] HEX1
     );
 
-    reg [5:0] current_state, next_state;
+    reg [5:0] next_state;
 	 
 	 //hex_decoder h1(2, HEX1);
 	 
-	 assign curr = current_state; // debugging output
+	 //assign curr = current_state; // debugging output
     
     localparam  S_MENU        	= 0,
 					 S_MENU_WAIT 		= 1,
@@ -108,22 +108,22 @@ module control(
 					 S_DISPLAY_WAIT   = 7;
     
     // state table
-    always@(*)
+    always @(*)
     begin: state_table 
             case (current_state)
-					 //S_MENU: next_state = (go && resetn) ? S_PHYSICS_WAIT : S_MENU;
-					 //S_PHYSICS: next_state = (!resetn || endgame) ? S_MENU_WAIT : S_SETUP_WAIT;
-					 //S_SETUP: next_state = !resetn ? S_MENU_WAIT : S_DISPLAY_WAIT;
-                //S_DISPLAY: begin
-						//if (!resetn) next_state = S_MENU_WAIT;
-						//else if (o) next_state = S_PHYSICS_WAIT;
-						//else next_state = S_DISPLAY_WAIT;
-					 //end
+					 S_MENU: next_state = (go && resetn) ? S_PHYSICS_WAIT : S_MENU;
+					 S_PHYSICS: next_state = (!resetn || endgame) ? S_MENU_WAIT : S_SETUP_WAIT;
+					 S_SETUP: next_state = (!resetn) ? S_MENU_WAIT : S_DISPLAY_WAIT;
+                S_DISPLAY: begin
+						if (!resetn) next_state = S_MENU_WAIT;
+						else if (o) next_state = S_PHYSICS_WAIT;
+						else next_state = S_DISPLAY_WAIT;
+					 end
 					 //waits
 					 S_MENU_WAIT: next_state = S_MENU;
-					 //S_PHYSICS_WAIT: next_state = S_PHYSICS;
-					 //S_SETUP_WAIT: next_state = S_SETUP;
-					 //S_DISPLAY_WAIT: next_state = S_DISPLAY;
+					 S_PHYSICS_WAIT: next_state = S_PHYSICS;
+					 S_SETUP_WAIT: next_state = S_SETUP;
+					 S_DISPLAY_WAIT: next_state = S_DISPLAY;
             default: next_state = S_MENU_WAIT;
         endcase
     end
@@ -189,20 +189,24 @@ module datapath(
 		 output reg enable
     );
 	 
+	 initial hdude = 30;
+	 initial vdude = 94;
+	 initial vwall = 0;
+	 initial hwall = 0;
+	 
 	 integer i;
     integer j;
 
     // top left coordinates of dude
     reg [4:0] surr;
-    reg [3:0] xdude = 4; // if we change this we need to change the collision check to be a for loop
-    reg [3:0] ydude = 6;
     reg [99:0] nextwall;
     reg [99:0] nextwall1;
 	 reg which=0; 
 	 
 	 always@(posedge clk) begin
-		case (curr) 
+		case (curr)
 			0: begin // MENU
+			/*
 				for (i=0; i<4000; i=i+1) begin // change vwall to be the menu screen
 					vwall[i] = 0;
 				end
@@ -215,32 +219,46 @@ module datapath(
 				for (i=0; i<120; i=i+1) begin	
 					hwall[i] = 1;
 				end
+				*/
+				vwall <= 0;
+				hwall <= 0;
 				hdude <= 30;
 				vdude <= 94;
 				enable <= 1;
 			end
-
+			
 			2: begin // PHYSICS
+				
 				// 1. collision check
             // a. vertical
-            if (!grav)  // grav down
-                surr = {vwall[100*hdude + vdude-1], vwall[100*(hdude+1) + vdude-1], vwall[100*(hdude+2) + vdude-1], vwall[100*(hdude+3) + vdude-1]};
-            else        // grav up
-                surr = {vwall[100*hdude + vdude+ydude+1], vwall[100*(hdude+1) + vdude+ydude+1], vwall[100*(hdude+2) + vdude+ydude+1], vwall[100*(hdude+3) + vdude+ydude+1]};
-            if (|surr) begin
+            if (!grav) begin  // grav down
+					 surr[3] <= vwall[100*hdude + vdude-1];
+					 surr[2] <= vwall[100*(hdude+1) + vdude-1];
+					 surr[1] <= vwall[100*(hdude+2) + vdude-1];
+					 surr[0] <= vwall[100*(hdude+3) + vdude-1];
+                //surr <= {vwall[100*hdude + vdude-1], vwall[100*(hdude+1) + vdude-1], vwall[100*(hdude+2) + vdude-1], vwall[100*(hdude+3) + vdude-1]};
+            end
+				else begin // grav up
+					 surr[3] <= vwall[100*hdude + vdude+6+1];
+					 surr[2] <= vwall[100*(hdude+1) + vdude+6+1];
+					 surr[1] <= vwall[100*(hdude+2) + vdude+6+1];
+					 surr[0] <= vwall[100*(hdude+3) + vdude+6+1];
+                //surr <= {vwall[100*hdude + vdude+6+1], vwall[100*(hdude+1) + vdude+6+1], vwall[100*(hdude+2) + vdude+6+1], vwall[100*(hdude+3) + vdude+6+1]};
+            end
+				if (|surr) begin
 					if (grav) vdude = vdude - 1;
 					else vdude = vdude + 1;
  				end
 				
             // b. horizontal
             if (hwall[hdude+1]) begin
-					 // if (|vwall[(100*(hdude+xdude+1) + vdude) : (100*(hdude+xdude+1) + vdude+5)]) begin
-						  if (|{vwall[100*(hdude+xdude+1) + vdude], vwall[(100*(hdude+xdude+1) + vdude+1)], vwall[(100*(hdude+xdude+1) + vdude+2)], vwall[(100*(hdude+xdude+1) + vdude+3)], vwall[(100*(hdude+xdude+1) + vdude+4)], vwall[(100*(hdude+xdude+1) + vdude+5)]}) begin
+					 // if (|vwall[(100*(hdude+4+1) + vdude) : (100*(hdude+4+1) + vdude+5)]) begin
+						  if (|{vwall[100*(hdude+4+1) + vdude], vwall[(100*(hdude+4+1) + vdude+1)], vwall[(100*(hdude+4+1) + vdude+2)], vwall[(100*(hdude+4+1) + vdude+3)], vwall[(100*(hdude+4+1) + vdude+4)], vwall[(100*(hdude+4+1) + vdude+5)]}) begin
                     hdude = hdude-1;
                     if (hdude <= 0) endgame = 1;
                 end
             end
-
+				
             // 2. shifting
             // TODO: use RAM to get next walls from the map
             nextwall = 100'b0000000000000000000000000000000000000000000000000000000000000000000000000000000011111111111111111111;
@@ -295,8 +313,8 @@ module datapath(
 //    
 //    reg [4:0] surr;
 //    reg inc = 1'b1;
-//    reg [3:0] xdude = 4'd4; // if we change this we need to change the collision check to be a for loop
-//    reg [3:0] ydude = 4'd6;
+//    reg [3:0] 4 = 4'd4; // if we change this we need to change the collision check to be a for loop
+//    reg [3:0] 6 = 4'd6;
 //    reg [99:0] nextwall;
 //
 //    wire o;
@@ -329,7 +347,7 @@ module datapath(
 //////            vdude = 8'd100;
 ////
 ////            inc = 1'b1;
-////            xdude = 4'd4;
+////            4 = 4'd4;
 ////        end
 //        else if (ingame) begin
 ////            // 1. collision check
@@ -337,11 +355,11 @@ module datapath(
 ////            if (!grav)  // grav down
 ////                surr = {vwall[hdude][vdude-1'b1], vwall[hdude+1'b1][vdude-1'b1], vwall[hdude+2'd2][vdude-1'b1], vwall[hdude+2'd3][vdude-1'b1]};
 ////            else        // grav up
-////                surr = {vwall[hdude][vdude+ydude+1'b1], vwall[hdude+1'b1][vdude+ydude+1'b1], vwall[hdude+2'd2][vdude+ydude+1'b1], vwall[hdude+2'd3][vdude+ydude+1'b1]};
+////                surr = {vwall[hdude][vdude+6+1'b1], vwall[hdude+1'b1][vdude+6+1'b1], vwall[hdude+2'd2][vdude+6+1'b1], vwall[hdude+2'd3][vdude+6+1'b1]};
 ////            
 ////            // b. horizontal
 ////            if (hwall[1'b1]) begin
-////                if (~|{vwall[hdude+xdude+1'b1][vdude], vwall[hdude+xdude+1'b1][vdude+1'b1], vwall[hdude+xdude+1'b1][vdude+2'd2], vwall[hdude+xdude+1'b1][vdude+2'd3], vwall[hdude+xdude+1'b1][vdude+3'd4], vwall[hdude+xdude+1'b1][vdude+3'd5]}) begin
+////                if (~|{vwall[hdude+4+1'b1][vdude], vwall[hdude+4+1'b1][vdude+1'b1], vwall[hdude+4+1'b1][vdude+2'd2], vwall[hdude+4+1'b1][vdude+2'd3], vwall[hdude+4+1'b1][vdude+3'd4], vwall[hdude+4+1'b1][vdude+3'd5]}) begin
 ////                    hdude = hdude-1'b1;
 ////                    if (hdude <= 1'b0)
 ////                        endgame = 1'b1;
@@ -375,25 +393,25 @@ module datapath(
 
 endmodule
 
-module update_screen(enable, vwall, vdude, hdude, clk, resetn, setup, display, x,y,colour,o);
-    input [11999:0] vwall; // maybe too much? 
-    input [7:0] hdude; // group of 4 1s 
-    input [7:0] vdude; // 4 pixels wide
-    input enable;
-    input clk;
-    input resetn;
-	 input setup;
-	 input display;
+module update_screen(
+		 input [11999:0] vwall, // maybe too much? 
+		 input [7:0] hdude, // group of 4 1s 
+		 input [7:0] vdude, // 4 pixels wide
+		 input enable,
+		 input clk,
+		 input resetn,
+		 input setup,
+		 input display,
 
-	 output reg [7:0] x,y;
-	 output reg [3:0] colour;
-    output reg o;
-
+		 output reg [7:0] x,y,
+		 output reg [3:0] colour,
+		 output reg o
+	 );
     reg [7:0]h_counter_w = 20;
     reg [7:0]v_counter_w = 10;
     reg [7:0]h_counter_d = 0;
     reg [7:0]v_counter_d = 0;
- 
+	
     
     // WALLS
     always @(posedge clk)
@@ -411,7 +429,7 @@ module update_screen(enable, vwall, vdude, hdude, clk, resetn, setup, display, x
                 begin 
                     if (v_counter_w < 110)
                         begin
-                            colour = (vwall[100*(h_counter_w-20) + (v_counter_w-10)] == 1'b1 ? 3'b111 : 3'b000);
+                            colour = (datapath.vwall[100*(h_counter_w-20) + (v_counter_w-10)] == 1'b1 ? 3'b111 : 3'b000);
 
                              v_counter_w = v_counter_w + 1;
                              y = v_counter_w;
