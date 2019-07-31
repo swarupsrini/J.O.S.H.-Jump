@@ -153,7 +153,7 @@ module datapath(
 		 // inputs from control
 		 input menu,
 		 input physics,
-		 input setup
+		 input setup,
 		 input display,
 		 
 		 // output to control

@@ -125,3 +125,5 @@ Quartus/PLLJ_PLLSPE_INFO.txt
 Quartus/incremental_db/compiled_partitions/JOSH_Jump.root_partition.map.dpi.tmp
 Quartus/db/JOSH_Jump.tmw_info
 Quartus/JOSH_Jump.qws
+Quartus/db/JOSH_Jump.quiproj.8260.rdr.flock
+joshtest.v.bak
