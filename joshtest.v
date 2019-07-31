@@ -206,20 +206,6 @@ module datapath(
 	 always@(posedge clk) begin
 		case (curr)
 			0: begin // MENU
-			/*
-				for (i=0; i<4000; i=i+1) begin // change vwall to be the menu screen
-					vwall[i] = 0;
-				end
-				for (i=4000; i<8000; i=i+1) begin // change vwall to be the menu screen
-					vwall[i] = 0;
-				end
-				for (i=8000; i<12000; i=i+1) begin // change vwall to be the menu screen
-					vwall[i] = 0;
-				end
-				for (i=0; i<120; i=i+1) begin	
-					hwall[i] = 1;
-				end
-				*/
 				vwall <= 0;
 				hwall <= 0;
 				hdude <= 30;
@@ -228,7 +214,6 @@ module datapath(
 			end
 			
 			2: begin // PHYSICS
-				
 				// 1. collision check
             // a. vertical
             if (!grav) begin  // grav down
@@ -280,116 +265,6 @@ module datapath(
 			end
 		endcase
 	end
-
-//	 always @(posedge menu) begin // going to menu
-//		for (i=0; i<12000; i=i+1) begin // change vwall to be the menu screen
-//			vwall[i] = 0;
-//		end
-//      for (i=0; i<120; i=i+1) begin	
-//         hwall[i] = 1;
-//      end
-//      hdude <= 30;
-//      vdude <= 94;
-//		enable <= 1;
-//	 end
-//	 
-//	 always @(posedge physics) begin
-//		
-//	 end
-	 
-	 
-	 
-//    // ints
-//    integer i;
-//    integer j;
-//
-//    // registers/wires
-//    reg [99:0] vwall [119:0]; 
-//    reg [11999:0] vwall1;
-//    reg [119:0] hwall;
-//    // top left coordinates of dude
-//    reg [7:0] hdude = 7'd125; // from 0 to 20
-//    reg [7:0] vdude = 8'd104; // from 6 to 100
-//    
-//    reg [4:0] surr;
-//    reg inc = 1'b1;
-//    reg [3:0] 4 = 4'd4; // if we change this we need to change the collision check to be a for loop
-//    reg [3:0] 6 = 4'd6;
-//    reg [99:0] nextwall;
-//
-//    wire o;
-//    reg o1;
-//    always @(*) begin
-//        o1 = o;
-//    end
-//
-//	 reg enable = 0;
-//	 
-//    // modules
-//    update_screen us(enable, vwall1, vdude, hdude, clk, resetn, x,y,colour,o);
-//
-//    always @(posedge clk) begin
-//        // 0. resetting
-//        if (!resetn) begin
-//            endgame = 1'b1;
-//        end
-////        else if (!ingame) begin
-////            endgame = 1'b0;
-////            for (i=0; i<120; i=i+1) begin
-////            for (j=0; j<100; j=j+1) begin
-////                vwall[i][j] = 1'b0;
-////            end
-////            end
-////            for (i=0; i<120; i=i+1) begin
-////                hwall[i] = 1'b0;
-////            end
-//////            hdude = 7'd20;
-//////            vdude = 8'd100;
-////
-////            inc = 1'b1;
-////            4 = 4'd4;
-////        end
-//        else if (ingame) begin
-////            // 1. collision check
-////            // a. vertical
-////            if (!grav)  // grav down
-////                surr = {vwall[hdude][vdude-1'b1], vwall[hdude+1'b1][vdude-1'b1], vwall[hdude+2'd2][vdude-1'b1], vwall[hdude+2'd3][vdude-1'b1]};
-////            else        // grav up
-////                surr = {vwall[hdude][vdude+6+1'b1], vwall[hdude+1'b1][vdude+6+1'b1], vwall[hdude+2'd2][vdude+6+1'b1], vwall[hdude+2'd3][vdude+6+1'b1]};
-////            
-////            // b. horizontal
-////            if (hwall[1'b1]) begin
-////                if (~|{vwall[hdude+4+1'b1][vdude], vwall[hdude+4+1'b1][vdude+1'b1], vwall[hdude+4+1'b1][vdude+2'd2], vwall[hdude+4+1'b1][vdude+2'd3], vwall[hdude+4+1'b1][vdude+3'd4], vwall[hdude+4+1'b1][vdude+3'd5]}) begin
-////                    hdude = hdude-1'b1;
-////                    if (hdude <= 1'b0)
-////                        endgame = 1'b1;
-////                end
-////            end
-//
-//            // 2. shifting
-//            // TODO: use RAM to get next walls from the map
-//            nextwall = 100'b1111111111111111111100000000000000000000000000000000000000000000000000000000000011111111111111111111;
-//            if (|nextwall == 0) begin
-//                endgame = 1'b1;
-//            end
-//            for (i=0; i<119; i=i+1) begin
-//                vwall[i] = vwall[i+1];
-//                hwall[i] = hwall[i+1];
-//            end
-//            vwall[119] = nextwall;
-//
-//            // 3. drawing
-//            for (i=0; i<120; i=i+1) begin
-//                for (j=0; j<100; j=j+1) begin
-//                    vwall1[i*100 + j] = vwall[i][j];
-//                end
-//            end
-//				
-//				enable = 1;
-//				
-//            wait (o1 == 1'b1);
-//        end
-//    end
 
 endmodule
 
