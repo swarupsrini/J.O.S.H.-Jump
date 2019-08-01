@@ -7,7 +7,7 @@
 //LEDR displays result
 //HEX0 & HEX1 also displays result
 
-module JOSH_Jump(
+module JOSH(
     input [9:0] SW,
     input [3:0] KEY,
     input CLOCK_50,
