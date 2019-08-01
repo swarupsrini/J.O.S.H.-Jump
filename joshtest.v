@@ -7,7 +7,7 @@
 //LEDR displays result
 //HEX0 & HEX1 also displays result
 
-module JOSH(
+module JOSH_Jump(
     input [9:0] SW,
     input [3:0] KEY,
     input CLOCK_50,
@@ -198,6 +198,7 @@ module datapath(
     integer j;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 	 
 	 wire i100;
 	 assign i100 = i * 100;
@@ -212,6 +213,8 @@ module datapath(
     reg [99:0] wallall = 100'b1111111111111111111100000000000000000000000000000000000000000000000000000000000011111111111111111111;
     reg [99:0] wallmid = 100'b0000000000000000000000000000001111111111111111111111111111111111111111000000000000000000000000000000;
 =======
+=======
+>>>>>>> parent of b515b95... Update joshtest.v
 =======
 >>>>>>> parent of b515b95... Update joshtest.v
 
@@ -292,6 +295,9 @@ module datapath(
             end
 				which = !which;
 <<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> parent of b515b95... Update joshtest.v
+=======
 >>>>>>> parent of b515b95... Update joshtest.v
 =======
 >>>>>>> parent of b515b95... Update joshtest.v
