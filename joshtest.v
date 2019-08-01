@@ -197,6 +197,7 @@ module datapath(
 	 integer i;
     integer j;
 <<<<<<< HEAD
+<<<<<<< HEAD
 	 
 	 wire i100;
 	 assign i100 = i * 100;
@@ -211,6 +212,8 @@ module datapath(
     reg [99:0] wallall = 100'b1111111111111111111100000000000000000000000000000000000000000000000000000000000011111111111111111111;
     reg [99:0] wallmid = 100'b0000000000000000000000000000001111111111111111111111111111111111111111000000000000000000000000000000;
 =======
+=======
+>>>>>>> parent of b515b95... Update joshtest.v
 
     // top left coordinates of dude
     reg [4:0] surr;
@@ -288,6 +291,9 @@ module datapath(
 					 else vwall[119*100 + j] = nextwall1[j];
             end
 				which = !which;
+<<<<<<< HEAD
+>>>>>>> parent of b515b95... Update joshtest.v
+=======
 >>>>>>> parent of b515b95... Update joshtest.v
 			end
 		endcase
