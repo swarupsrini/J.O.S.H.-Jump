@@ -7,7 +7,7 @@
 //LEDR displays result
 //HEX0 & HEX1 also displays result
 
-module JOSH(
+module JOSH_Jump(
     input [9:0] SW,
     input [3:0] KEY,
     input CLOCK_50,
@@ -201,12 +201,18 @@ module datapath(
 	 integer i;
     integer j;
 	 
+	 wire i100;
+	 assign i100 = i * 100;
+	 
 	 wire [7:0] hdude100;
 	 assign hdude100 = hdude * 100;
+	 
     reg [3:0] surr;
 	 reg [5:0] surrh;
-    reg [99:0] nextwall;
-    reg [99:0] nextwall1;
+	 reg [99:0] walltop = 100'b1111111111111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000;
+    reg [99:0] wallbot = 100'b0000000000000000000000000000000000000000000000000000000000000000000000000000000011111111111111111111;
+    reg [99:0] wallall = 100'b1111111111111111111100000000000000000000000000000000000000000000000000000000000011111111111111111111;
+    reg [99:0] wallmid = 100'b0000000000000000000000000000001111111111111111111111111111111111111111000000000000000000000000000000;
 	 reg which=0; 
 	 
 	 assign LEDR[0] = which;
@@ -266,8 +272,6 @@ module datapath(
 				if (vdude < 10) vdude = 10;
             // 2. shifting
             // TODO: use RAM to get next walls from the map
-            nextwall = 100'b0000000000000000000000000000000000000000000000000000000000000000000000000000000011111111111111111111;
-            nextwall1 = 100'b1111111111111111111100000000000000000000000000000000000000000000000000000000000011111111111111111111;
             //if (|nextwall == 0) begin
             //    endgame = 1'b1;
             //end
@@ -275,15 +279,16 @@ module datapath(
 					//vwall[i*100 : i*100 + 99] = vwall[(i+1)*100 : (i+100) + 99];
 					hwall[i] = hwall[i+1];
 					for (j=0; j<100; j=j+1) begin
-						 vwall[i*100 + j] = vwall[(i+1)*100 + j];
+						 vwall[i100 + j] = vwall[i100 + 100+ j];
 					end
 				end
 				for (j=0; j<100; j=j+1) begin
-                if (which) vwall[11800 + j] = nextwall[j];
-					 else vwall[11800 + j] = nextwall1[j];
+                if (which == 0) vwall[11800 + j] = wallbot[j];
+					 else if (which == 1) vwall[11800 + j] = walltop[j];
+					 else if (which == 2) vwall[11800 + j] = wallmid[j];
+					 else if (which == 3) vwall[11800 + j] = wallall[j];
             end
-				//hwall[118] = 1; // hard coded
-				which = ~which;
+				which = (which == 3) ? 0 : which + 1;
 			end
 		endcase
 	end
