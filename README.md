@@ -5,7 +5,7 @@ Inspired by Gravity Guy, J.O.S.H. Jump is a platformer game project where the pl
 Altera DE2-115 Board 
 
 ## Controls: 
-SW[0] : Toggles gravity. Keep it down to signify gravity pointing down and switch it up to toggle gravity up.
+SW[0] : Toggles gravity. Keep it down to signify gravity pointing down and switch it up to toggle gravity up.</br>
 SW[1] : The 'go' switch. Turn it on to start the game if in the menu stage.
 
 ## Instructions:
