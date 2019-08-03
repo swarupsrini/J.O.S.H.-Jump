@@ -101,3 +101,5 @@ Make sure to document what you added on top of the existing work, especially if 
 Repo & Video
 ------------
 <At the end of the project, provide links to your code repository and presentation video (and passwords if not public), if you don't want us to publish this info on future course websites, just say so here>
+presentation video: https://youtu.be/mXg3eTzyErs
+Github Repo: https://github.com/swarupsrini/J.O.S.H.-Jump
